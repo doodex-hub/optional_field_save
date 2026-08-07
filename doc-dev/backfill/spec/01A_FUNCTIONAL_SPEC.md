@@ -25,12 +25,13 @@ kolom opsional per-list-view disimpan juga ke field `res.partner.optional_field_
 - Struktur value: dict Python/JS object, key = `"optional_field.<resModel>"` (potongan kedua dari
   `keyOptionalFields` list view, diprefix `"optional_field."`), value = string daftar nama field
   optional yang sedang AKTIF (dipisah koma), mis. `{"optional_field.res.partner": "email,phone"}`.
-- **`default={}` HANYA berlaku untuk partner yang dibuat SETELAH modul diinstall** — partner yang
-  SUDAH ADA di database sebelum instalasi tidak otomatis mendapat `{}` (kolom baru di tabel existing
-  tidak di-backfill oleh default Python-level ini). Untuk partner lama, `search_read` akan
-  mengembalikan `False` untuk field ini sampai pertama kali ditulis. Kode JS (lihat §2.2)
-  menangani kasus `False` ini secara eksplisit — dikonfirmasi bukan bug, lihat F-04 di `FINDINGS.md`
-  kalau ada catatan tambahan.
+- **`default={}` TIDAK PERNAH benar-benar menghasilkan `{}` persisten — dikonfirmasi via eksekusi
+  test nyata Step 04 (F-11).** Asumsi awal (sebelum dites) adalah "partner baru dapat `{}`, partner
+  lama dapat `False`" — TERBUKTI SALAH: `{}` adalah nilai falsy Python, tersimpan sebagai NULL di
+  kolom DB, dibaca balik jadi `False` — SEMUA partner (baru maupun lama) identik `False` sampai
+  pertama kali ditulis dict non-kosong. Kode JS (§2.2/§2.3) menangani `False` ini dengan benar di
+  semua jalur yang diperiksa (dikonfirmasi tidak crash) — lihat F-11 di `FINDINGS.md` untuk detail
+  lengkap dan rekomendasi kosmetik (`default=False` supaya sesuai kenyataan).
 
 ### 2.2 `static/src/js/webclient.js` — Load Awal (DB → sessionStorage)
 
@@ -61,6 +62,11 @@ kolom opsional per-list-view disimpan juga ke field `res.partner.optional_field_
   — TIDAK memakai versi yang sudah di-load `webclient.js`, selalu round-trip baru ke server tiap
   toggle), gabungkan key baru ke dict lama, `orm.call("res.partner", "write", ...)` untuk persist,
   lalu sinkronkan `sessionStorage` untuk key itu.
+- **`orm.call("res.partner", "write", ...)` di atas memakai hak akses user LOGIN APA ADANYA** —
+  tidak ada controller/method Python yang bisa `sudo()`, semua langsung dari ORM JS. DIKONFIRMASI
+  via eksekusi test (F-10, Tinggi): user `base.group_user` biasa TANPA `group_partner_manager`
+  ("Contact Creation") HANYA `perm_read` pada `res.partner` — `write` di sini akan melempar
+  `AccessError`, ditangkap `try/catch` dan cuma `console.error` (silent, tidak ada notifikasi UI).
 
 ### 2.4 `static/src/js/user_menu_items.js` — Cleanup saat Logout
 
@@ -101,6 +107,8 @@ kolom opsional per-list-view disimpan juga ke field `res.partner.optional_field_
 | BR-06 | `ir.model.access.csv` tidak terdaftar di `data` manifest (dead) DAN isinya mengacu model yang tidak ada | `[PERLU-KEPUTUSAN]` (F-01) | `security/ir.model.access.csv:2`, `__manifest__.py` |
 | BR-07 | Logout menu item diganti total, menghapus seluruh key `sessionStorage` yang mengandung `"optional_field"` | `[HASIL-BACA]` | `static/src/js/user_menu_items.js:10-30` |
 | BR-08 | `application: True` tanpa `views/`/menu apapun — tidak ada entry point terlihat di Apps | `[PERLU-KEPUTUSAN]` (F-03) | `__manifest__.py:22` |
+| BR-09 | User `base.group_user` biasa HANYA `perm_read` pada `res.partner` (core ACL) — write ke partner sendiri via `setDatabase()` GAGAL untuk user tanpa `group_partner_manager` | `[PERLU-KEPUTUSAN]` (F-10, Tinggi) — `[DIKONFIRMASI]` eksekusi | `static/src/js/list_renderer.js:44-77` |
+| BR-10 | `fields.Json(default={})` tidak pernah menghasilkan `{}` persisten — `{}` falsy, tersimpan NULL, dibaca balik `False` untuk SEMUA partner (baru/lama sama saja) | `[PERLU-KEPUTUSAN]` (F-11, Sedang) — `[DIKONFIRMASI]` eksekusi | `models/res_partner.py:7` |
 
 ---
 

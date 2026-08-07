@@ -11,14 +11,13 @@
 
 ## AC-01 — Instalasi modul
 
-**AC-01-01** — ref `BR-06` `[PERLU-KEPUTUSAN]` (F-01, Sedang)
+**AC-01-01** — ref `BR-06` `[PERLU-KEPUTUSAN]` (F-01, Sedang) — `[DIKONFIRMASI]` via eksekusi nyata
 Given database Odoo 17.0 kosong/fresh dengan `base`+`web` saja
 When modul `optional_field_save` di-install (`-i optional_field_save`)
-Then instalasi SUKSES — `__manifest__.py` tidak punya key `data` sama sekali, jadi
-`security/ir.model.access.csv` (yang isinya cacat, mengacu model yang tidak ada) tidak pernah
-di-load Odoo, tidak berpengaruh ke instalasi. Diverifikasi empiris di Step 04 sebagai bukti
-tambahan (`test/04A_DEV_TESTING.md`) — hasil DIHARAPKAN sukses (bukan lagi "diduga gagal" seperti
-asumsi awal sebelum manifest dibaca teliti).
+Then instalasi SUKSES — dikonfirmasi empiris di Step 04 (`docker compose up`, Mode C): 12 modul
+loaded tanpa Traceback, `security/ir.model.access.csv` (yang isinya cacat, mengacu model yang tidak
+ada) terbukti tidak berpengaruh karena memang tidak pernah di-load Odoo (`__manifest__.py` tidak
+punya key `data`). Lihat `test/04A_DEV_TESTING.md`.
 
 ## AC-02 — Persistensi preferensi kolom optional (lintas browser)
 
@@ -36,17 +35,23 @@ When user login di BROWSER LAIN (localStorage kosong) dan membuka list view resM
 Then preferensi kolom optional yang sama muncul (di-load dari DB oleh `webclient.js` ke
 `sessionStorage` saat webclient mount, dibaca `list_renderer.js` saat render).
 
-**AC-02-03** — ref `BR-01` `[HASIL-BACA]`
-Given partner user SUDAH ADA di database SEBELUM modul ini diinstall (field `optional_field_save`
-belum pernah di-write, nilai kolom `False`/NULL di DB, BUKAN `{}`)
-When user pertama kali toggle kolom optional setelah modul terinstall
+**AC-02-03** — ref `BR-01` `[DIKONFIRMASI]` via eksekusi nyata (direvisi, lihat F-11)
+Given SEMUA partner (baru MAUPUN lama — TERBUKTI tidak ada bedanya, lihat F-11) yang belum pernah
+ditulis field `optional_field_save`-nya
+When dibaca via `search_read`/`read`
+Then nilainya `False` (BUKAN `{}` seperti dugaan awal `default={}` di field definition — `{}` itu
+falsy, tidak pernah tersimpan sebagai literal, selalu jadi NULL/`False`). Dites langsung di Step 04
+(`test_new_partner_default_is_falsy_not_empty_dict`) — hasil: `False` utk partner baru sekalipun.
+
+**AC-02-04** — ref `BR-01` `[DIKONFIRMASI]` via eksekusi nyata
+Given `old_value` (`optional_field_save` partner) bernilai `False` (kasus AC-02-03)
+When user pertama kali toggle kolom optional (`setDatabase()` dipanggil)
 Then `setDatabase()` menangani `old_value` yang falsy dengan benar (`if (!old_value)` di
-`list_renderer.js:62`) — tidak crash, langsung membuat dict baru `{[key]: value}`. Perilaku SUDAH
-BENAR, dicatat di sini sebagai AC eksplisit (bukan asumsi) karena kombinasi
-`Object.keys(false)`/`Object.keys(null)` gampang disalahsangka error tanpa dites nyata (`Object.keys(false)`
-→ `[]`, valid; `Object.keys(null)`/`Object.keys(undefined)` → `TypeError` — TAPI `old_value` di
-sini sumbernya `search_read` yang untuk Json field mengembalikan `false`, bukan `null`/`undefined`,
-jadi jalur throw itu TIDAK tercapai dalam alur normal).
+`list_renderer.js:62`) — TIDAK crash, langsung membuat dict baru `{[key]: value}`. Dikonfirmasi
+tidak crash karena `old_value` sumbernya `search_read` yang untuk Json field mengembalikan
+`false` (bukan `null`/`undefined`) — `Object.keys(false)` → `[]` (valid, tidak throw), beda dari
+`Object.keys(null)`/`Object.keys(undefined)` yang akan `TypeError` (jalur itu TIDAK tercapai dalam
+alur normal). Perilaku SUDAH BENAR.
 
 ## AC-03 — Override method core `ListRenderer` (JS)
 
@@ -81,3 +86,19 @@ Then modul MUNCUL sebagai aplikasi terinstall, TAPI tidak ada menu/action APAPUN
 ada `views/` sama sekali) — modul murni background-enhancer, `application: True` kemungkinan cuma
 untuk visibilitas di Apps store/listing (harga `10 USD` di manifest), bukan indikasi ada UI
 tersendiri. Perlu konfirmasi pemilik modul apakah ini disengaja.
+
+## AC-06 — Akses tulis `res.partner` untuk user internal biasa
+
+**AC-06-01** — `[DIKONFIRMASI]` via eksekusi nyata (F-10, **Tinggi**)
+Given user Internal (`base.group_user`) TANPA grup `base.group_partner_manager` ("Contact
+Creation") — kombinasi yang UMUM di instalasi Odoo nyata (banyak role operasional tidak diberi hak
+ini)
+When JS modul mencoba `orm.call("res.partner", "write", [[session.partner_id], {optional_field_save: ...}])`
+untuk partner user itu SENDIRI
+Then Odoo core melempar `AccessError` (`perm_write=0` untuk `base.group_user` pada `res.partner` —
+`access_res_partner_group_user` di `base/security/ir.model.access.csv`). `setDatabase()` menangkap
+error ini di `try/catch` dan HANYA `console.error(...)` — TIDAK ADA notifikasi UI ke user. Fitur
+persistensi lintas-browser GAGAL TOTAL secara silent untuk kelas user ini (fallback
+`localStorage` tetap jalan, jadi tidak ada gejala terlihat di browser yang sama). Dites langsung
+di Step 04 (`test_plain_internal_user_cannot_write_own_partner_field`,
+`test_user_with_partner_manager_group_can_write` sebagai pembanding).

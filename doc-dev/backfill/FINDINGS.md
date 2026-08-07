@@ -27,6 +27,8 @@
 | F-07 | Dead code: import tak terpakai (`useBus`, `useService`, variabel `key`) | `[HASIL-BACA]` | Rendah |
 | F-08 | Modul belum punya `tests/` sama sekali sebelum backfill | `[HASIL-BACA]` | — |
 | F-09 | README mengklaim "interface for managing saved options" — tidak ada di kode | `[PERLU-KEPUTUSAN]` | Rendah |
+| F-10 | User `base.group_user` biasa TIDAK BISA write `res.partner` sendiri — fitur gagal silent | `[PERLU-KEPUTUSAN]` | **Tinggi** |
+| F-11 | `fields.Json(default={})` TIDAK PERNAH menghasilkan `{}` persisten — selalu `False` sampai ditulis nilai non-kosong | `[PERLU-KEPUTUSAN]` | Sedang |
 
 ---
 
@@ -171,12 +173,77 @@ Store/blog), bukan gap kode — tidak ada bukti fitur ini pernah ada lalu dihapu
 overclaim, atau fitur "management interface" ini memang di-plan tapi belum diimplementasi.
 **Keputusan pemilik modul:** *(kosong — diisi manusia)*
 
+### F-10 — User `base.group_user` biasa TIDAK BISA write `res.partner` sendiri — fitur gagal silent
+**Tag:** `[PERLU-KEPUTUSAN]`
+**Lokasi:** `static/src/js/list_renderer.js:44-77` (`setDatabase`), diverifikasi lewat
+`tests/test_optional_field_save.py::test_plain_internal_user_cannot_write_own_partner_field`
+**Ref:** AC turunan §2.3/§2.6 `01A_FUNCTIONAL_SPEC.md`
+**Deskripsi:** DITEMUKAN LEWAT EKSEKUSI TEST NYATA (Step 04, Mode C), bukan dari baca kode saja.
+Modul mengasumsikan field baru di `res.partner` "otomatis ikut ACL `res.partner` yang sudah ada" —
+TERBUKTI ini tidak cukup: ACL bawaan Odoo core (`base/security/ir.model.access.csv` baris
+`access_res_partner_group_user`) memberi `base.group_user` (Internal User biasa) HANYA
+`perm_read=1` pada `res.partner` — `perm_write=0`. Full read/write/create/unlink HANYA untuk
+`base.group_partner_manager` ("Contact Creation", grup terpisah yang TIDAK otomatis dimiliki semua
+Internal User — banyak role operasional/gudang/akunting-only di perusahaan nyata TIDAK punya grup
+ini). Dibuktikan langsung: `partner.with_user(plain_internal_user).write({...})` melempar
+`AccessError: You are not allowed to modify 'Contact' (res.partner) records ... allowed for ...
+Extra Rights/Contact Creation` — pesan error asli dari Odoo core, bukan simulasi.
+**Dampak:** `setDatabase()` di `list_renderer.js` membungkus `orm.call(...)` dalam `try/catch` yang
+HANYA `console.error("Error fetching data:", error)` — TIDAK ADA notifikasi apapun ke user di UI.
+Konsekuensi nyata: untuk SEMUA user internal yang tidak punya grup "Contact Creation" (kemungkinan
+populasi besar di banyak instalasi Odoo — grup ini biasanya cuma dipegang sales/admin/full-access
+role), fitur INTI modul ini (persist kolom optional lintas browser) GAGAL TOTAL secara silent —
+localStorage-nya sendiri tetap jalan (fallback lama Odoo core, ditulis di baris kode yang sama
+tapi terpisah dari `setDatabase()`), jadi TIDAK ADA gejala terlihat sama sekali bagi user (kolom
+optional tetap "kelihatan tersimpan" di browser yang sama), sampai user ganti browser/device dan
+sadar preferensinya tidak ikut — pada titik itu tidak ada log/error yang bisa dirunut user awam.
+**Kemungkinan keterkaitan dengan F-01:** `security/ir.model.access.csv` yang dead+cacat di F-01
+KEMUNGKINAN BESAR awalnya dimaksudkan untuk menyelesaikan MASALAH INI (memberi akses tambahan) —
+tapi gagal di DUA lapis sekaligus: (a) tidak pernah terdaftar di `data` manifest, (b) isinya
+mengacu model yang salah/tidak ada. Kalau memang itu niatnya, perbaikan yang benar butuh access
+record untuk model `res.partner` (bukan model fiktif `optional_field_save.optional_field_save`),
+didaftarkan ke `data`.
+**Rekomendasi:** pemilik modul perlu memutuskan salah satu: (a) tambahkan `ir.model.access.csv`
+YANG BENAR (model `res.partner`, group `base.group_user`, perm_write=1 — meski ini melonggarkan
+akses write Contact utk SEMUA internal user, dampak keamanan lebih luas dari field ini saja, perlu
+dipikirkan matang), (b) pindahkan penyimpanan ke model lain yang memang privat per-user dan semua
+internal user boleh tulis (mis. `res.users.settings`, kalau tersedia di versi target, atau model
+baru khusus modul ini dengan ACL benar), atau (c) tambahkan `sudo()` di method Python kalau ada
+(saat ini TIDAK ADA — semua write langsung dari `orm.call` JS memakai hak akses user login apa
+adanya, tidak lewat controller/method Python yang bisa `sudo()`), (d) minimal tambahkan
+notifikasi visible ke user kalau `setDatabase()` gagal, supaya gagal-nya tidak silent.
+**Keputusan pemilik modul:** *(kosong — diisi manusia)*
+
+### F-11 — `fields.Json(default={})` tidak pernah menghasilkan `{}` persisten
+**Tag:** `[PERLU-KEPUTUSAN]`
+**Lokasi:** `models/res_partner.py:7`, diverifikasi lewat
+`tests/test_optional_field_save.py::test_new_partner_default_is_falsy_not_empty_dict`
+**Ref:** Merevisi BR-01/AC-02-03 di `01A_FUNCTIONAL_SPEC.md`/`01B_ACCEPTANCE_CRITERIA.md`
+**Deskripsi:** DITEMUKAN LEWAT EKSEKUSI TEST NYATA — asumsi awal `[HASIL-BACA]` "partner BARU
+(dibuat setelah modul terinstall) dapat default `{}`" TERBUKTI SALAH. `{}` adalah nilai falsy di
+Python; layer ORM/kolom `Json` menyimpan nilai falsy sebagai `NULL` di DB (pola sama seperti
+`Char`/`Text` — bukan bug spesifik modul ini, ini perilaku field Odoo core), dan saat dibaca balik
+mengembalikan `False`, BUKAN `{}`. Dites langsung: `self.env['res.partner'].create({'name': ...})`
+TANPA menyebut `optional_field_save`, dibaca balik = `False`. **Konsekuensi: TIDAK ADA partner
+(baru MAUPUN lama) yang pernah benar-benar punya `{}` dari `default={}` itu sendiri** — SEMUA
+partner mulai dari `False` sampai pertama kali ditulis dict non-kosong. Ini menggeser pemahaman
+BR-01/AC-02-03 di spec: bedanya "partner baru vs lama" yang tadinya dianggap relevan TERNYATA
+TIDAK ADA — keduanya identik (`False`) sampai first-write.
+**Dampak:** TIDAK ADA dampak fungsional negatif nyata yang ditemukan — kode JS (`setDatabase()`
+di `list_renderer.js`, `getOptionalActiveFields()` di `webclient.js`) SUDAH menangani `False`
+dengan benar di semua jalur yang diperiksa (`Object.keys(false)` → `[]`, `if (!old_value)` →
+tertangkap). Dicatat sebagai `[PERLU-KEPUTUSAN]` bukan karena ada bug tereksekusi, tapi karena
+`default={}` di kode SEKARANG menyesatkan pembaca (termasuk sesi backfill ini sebelum dites nyata)
+untuk mengira ada jaminan `{}` yang sebenarnya tidak pernah terwujud — kandidat perbaikan kosmetik
+(`default=False` eksplisit, atau dokumentasi inline) supaya niat kode sesuai kenyataan.
+**Rekomendasi:** ganti `default={}` jadi `default=False` (mencerminkan perilaku sebenarnya, tidak
+ada perubahan fungsional) ATAU tambah komentar inline menjelaskan gotcha ini supaya developer
+berikutnya tidak salah asumsi seperti sesi backfill ini di awal.
+**Keputusan pemilik modul:** *(kosong — diisi manusia)*
+
 ---
 
 ## Limitasi Tool (kalau ada)
 
-- Verifikasi F-01 (apakah `ir.model.access.csv` benar-benar di-load lewat `__manifest__.py` key
-  `data`, dan apakah ini benar-benar menggagalkan instalasi) BELUM final — direncanakan diverifikasi
-  empiris di Step 04 lewat instalasi nyata di container `odoo:17.0` (Mode C, CLI). Kalau Step 04
-  gagal total karena masalah environment (bukan modul), verifikasi ini akan tetap `[HASIL-BACA]`
-  murni dan dicatat eksplisit sebagai keterbatasan di `test/04A_DEV_TESTING.md`.
+*(kosong — semua verifikasi yang direncanakan berhasil dieksekusi nyata di Step 04, lihat
+`test/04A_DEV_TESTING.md`. F-01 dikonfirmasi empiris: instalasi modul SUKSES, tidak terblokir.)*
