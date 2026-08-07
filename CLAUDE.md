@@ -192,10 +192,13 @@ Tidak ada step 06 (Deploy Staging), 08 (UAT), 09 (Deploy Production) — di luar
 
 ## Status saat ini
 
-**Bootstrap selesai (2026-08-07).** Branch `backfill/17.0` aktif, `.claude/settings.json` +
-`.gitignore` terpasang, `CLAUDE.md` ini + struktur `doc-dev/backfill/` sudah dibuat. Siap lanjut ke
-Step 01 (baca kode `res_partner.py`/`controllers.py`/JS, tulis FUNCTIONAL_SPEC +
-ACCEPTANCE_CRITERIA).
+**Backfill Step 01-07 selesai (2026-08-07), mode kontinu CLI.** 11 findings tercatat di
+`FINDINGS.md` (F-01 s.d. F-11), dua di antaranya (F-10 Tinggi, F-11 Sedang) ditemukan lewat
+eksekusi test nyata, bukan baca kode. `records/optional_field_save/SUMMARY.md` di
+`doc-dev-backfill` sudah ditulis (2 kandidat pengetahuan, belum direview curation). Commit sudah
+dibuat per step gate di branch `backfill/17.0` — **belum di-push** (manual, lihat instruksi di
+bawah). Gap terbuka: verifikasi UI/browser live (S-04 di `07_QA_TESTING.md`) tidak dieksekusi sesi
+ini (limitasi tool + keputusan cakupan, lihat `04A_DEV_TESTING.md` §5).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -203,12 +206,22 @@ ACCEPTANCE_CRITERIA).
 
 | Step | Dokumen | Status | Gate |
 |---|---|---|---|
-| 01 | `01A_FUNCTIONAL_SPEC.md`, `01B_ACCEPTANCE_CRITERIA.md` | ⬜ Belum mulai | — |
-| 03B | `03B_TEST_PLAN.md` | ⬜ Belum mulai | — |
-| 04 | `04A_DEV_TESTING.md`, `04B_API_TEST.md` (kondisional), `tests/*.py` | ⬜ Belum mulai | ⏳ |
-| 07 | `07_QA_TESTING.md`, `07B_QA_AI_BROWSER.md` (kondisional) | ⬜ Belum mulai | ⏳ |
+| 01 | `01A_FUNCTIONAL_SPEC.md`, `01B_ACCEPTANCE_CRITERIA.md` | ✅ Selesai ditulis | — |
+| 03B | `03B_TEST_PLAN.md` | ✅ Selesai ditulis | — |
+| 04 | `04A_DEV_TESTING.md`, `tests/*.py` | ✅ Selesai ditulis | ✔️ Lulus (0 failed, 0 error of 4 tests) |
+| 07 | `07_QA_TESTING.md` | ✅ Selesai ditulis | ✔️ Lulus (findings terkonsolidasi, records/ pass sudah dilakukan) |
 
 Legenda: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai ditulis · ✔️ Lulus gate.
+
+### Serah-terima ke dev (git push — manual, tidak pernah otomatis)
+
+Branch `backfill/17.0` berisi 3 commit (bootstrap+spec, test plan, dev testing) + 1 commit
+menyusul (QA testing). Untuk push ke remote:
+```
+git push -u origin backfill/17.0
+```
+Merge ke `17.0`/`master` sepenuhnya keputusan Anda lewat proses review repo sendiri (PR atau
+konvensi tim) — BACKFILL tidak pernah menyentuh branch utama.
 
 ---
 
