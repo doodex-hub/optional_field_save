@@ -1,5 +1,4 @@
-# Claude Code / Cowork local session data — not part of the module source
-.claude/
-
-# Local Docker dev environment logs/state — not part of the module source
-docker-env/
+.claude/backfill-command-log.jsonl
+__pycache__/
+*.pyc
+docker-env/logs/
