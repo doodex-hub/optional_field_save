@@ -3,10 +3,12 @@
 const { patch } = require("@web/core/utils/patch");
 const { WebClient } = require("@web/webclient/webclient");
 const { session } = require("@web/session");
+const { useService } = require("@web/core/utils/hooks");
 
 patch(WebClient.prototype, {
     setup() {
         this.session = session;
+        this.orm = useService("orm");
         super.setup();
         this.getOptionalActiveFields();
     },
