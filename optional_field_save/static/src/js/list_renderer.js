@@ -14,26 +14,27 @@ patch(ListRenderer.prototype, {
         super.setup();
     },
 
-    getOptionalActiveFields() {
-        this.optionalActiveFields = {};
-        let key = this.keyOptionalFields;
+    computeOptionalActiveFields() {
+        // MIGRATION 17.0->18.0 (MF-01 / DIFF-01, lihat 03_MIGRATION_SPEC.md): core
+        // ListRenderer.getOptionalActiveFields() dihapus di 18.0, diganti
+        // computeOptionalActiveFields() - pure function, return value (bukan mutasi
+        // this.optionalActiveFields), dipanggil tiap onWillRender oleh core.
         let str = this.keyOptionalFields.split(",")[1];
         str = "optional_field." + str;
-        let optionalActiveFields = sessionStorage.getItem(str) || browser.localStorage.getItem(this.keyOptionalFields);
+        let optionalActiveFields = sessionStorage.getItem(str);
+        if (!optionalActiveFields) {
+            // Tidak ada di sessionStorage -> delegasikan fallback (localStorage / default
+            // "show") ke core, dikonfirmasi user (03_MIGRATION_SPEC.md) behaviorally identik
+            // dengan logic lama, sekaligus mengurangi risiko drift F-02.
+            return super.computeOptionalActiveFields();
+        }
+        const result = {};
+        optionalActiveFields = optionalActiveFields.split(",");
         const optionalColumn = this.allColumns.filter((col) => col.type === "field" && col.optional);
-        if (optionalActiveFields) {
-            optionalActiveFields = optionalActiveFields.split(",");
-            optionalColumn.forEach((col) => {
-                this.optionalActiveFields[col.name] = optionalActiveFields.includes(col.name);
-            });
-        } else if (optionalActiveFields !== "") {
-            for (const col of optionalColumn) {
-                this.optionalActiveFields[col.name] = col.optional === "show";
-            }
-        }
-        if (this.props.onOptionalFieldsChanged) {
-            this.props.onOptionalFieldsChanged(this.optionalActiveFields);
-        }
+        optionalColumn.forEach((col) => {
+            result[col.name] = optionalActiveFields.includes(col.name);
+        });
+        return result;
     },
 
     saveOptionalActiveFields() {

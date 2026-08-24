@@ -100,7 +100,9 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 5 — Acceptance Criteria & Test Plan, selesai ditulis.** 10 AC diturunkan dari `01b_BASELINE_SPEC.md` (BSL-NNN), termasuk AC-03-01 (verifikasi khusus keputusan `super()` MF-01) dan AC-07-01 (verifikasi eksekusi nyata MF-02). 4 test Python dari backfill dikonfirmasi ISI-nya nyata (bukan stub) — tinggal di-copy ke `target-codebase` Step 6, bukan ditulis ulang. Owl/JS (4 AC) WAJIB tour test baru, belum pernah ada di backfill. Siap lanjut ke **Step 6 — Code Migration** (titik pertama edit kode module beneran).
+**Step 6 — Code Migration, kode selesai ditulis, MENUNGGU G1 (install test).** `__manifest__.py` version bump ke `18.0.1.0.0` (Fase A1), rewrite `computeOptionalActiveFields()` di `list_renderer.js` (Fase E, solusi MF-01 — sessionStorage-check + fallback `super()`). Semua fase lain N/A/tidak butuh perubahan (dikonfirmasi Applicability Check di `06c_IMPLEMENTATION_LOG.md`). **BELUM divalidasi eksekusi nyata** — G1 (install test) perlu keputusan mode eksekusi dari dev dulu sebelum dijalankan.
+
+> AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
 > **Catatan soal gate ini:** berbeda dari Step 1 (butuh judgment bisnis manusia), Step 4 sifatnya audit cakupan yang objektif/enumerable (elemen source ada di spec atau tidak) — AI menandai lulus sendiri, TAPI tetap dilaporkan eksplisit ke user (lihat riwayat chat) supaya bisa dikoreksi kalau ada elemen yang terlewat.
 
@@ -115,7 +117,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24, self-verified) |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Selesai | Tidak ada gate formal |
-| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
+| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | 🔄 Kode selesai, menunggu G1 | — (disiplin per-fase A1→G2, lihat `06c_IMPLEMENTATION_LOG.md`) |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
