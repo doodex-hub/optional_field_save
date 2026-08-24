@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 2 — Diff & Compatibility Analysis, selesai ditulis (belum direview user, tidak ada gate formal untuk step ini).** Ditemukan 2 risiko besar: (1) `ListRenderer.getOptionalActiveFields()` dihapus total di 18.0 (MF-01, wajib rewrite di step 3), (2) kemungkinan bug pre-existing `this.orm` undefined di `webclient.js` (MF-02, wajib verifikasi eksekusi nyata di step 9). F-10/F-11 dikonfirmasi tetap identik di 18.0 tanpa perubahan (MF-03/MF-04). Siap lanjut ke Step 3 (Migration Spec teknis) begitu user sempat baca `02_DIFF_ANALYSIS.md` + `FINDINGS.md`.
+**Step 3 — Migration Spec (teknis), selesai ditulis.** Solusi konkret untuk MF-01 sudah dirancang dan dikonfirmasi user: override baru `computeOptionalActiveFields()` cek sessionStorage dulu, fallback `super()` (bukan copy manual) untuk logic core. MF-02 (`this.orm` di `webclient.js`) sengaja TIDAK di-"perbaiki" preventif — ditunda sampai verifikasi eksekusi nyata di Step 9. Manifest version bump ke `18.0.1.0.0` jadi Critical Blocker #1. Siap lanjut ke Step 4 (Spec Completeness Review, gate formal) atau langsung ke Step 5 (Acceptance Criteria) — tanya user step mana yang jalan dulu.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -110,7 +110,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 |---|---|---|---|---|
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Selesai | Tidak ada gate formal — 2 finding baru (MF-01, MF-02) di `FINDINGS.md` |
-| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ⬜ Belum mulai | — |
+| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
