@@ -100,7 +100,9 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 3 — Migration Spec (teknis), selesai ditulis.** Solusi konkret untuk MF-01 sudah dirancang dan dikonfirmasi user: override baru `computeOptionalActiveFields()` cek sessionStorage dulu, fallback `super()` (bukan copy manual) untuk logic core. MF-02 (`this.orm` di `webclient.js`) sengaja TIDAK di-"perbaiki" preventif — ditunda sampai verifikasi eksekusi nyata di Step 9. Manifest version bump ke `18.0.1.0.0` jadi Critical Blocker #1. Siap lanjut ke Step 4 (Spec Completeness Review, gate formal) atau langsung ke Step 5 (Acceptance Criteria) — tanya user step mana yang jalan dulu.
+**Step 4 — Spec Completeness Review, gate LULUS (self-verified AI, enumerasi objektif — lihat catatan di bawah).** Semua elemen source module (models, controllers, security, static/js, manifest, aset statis, dokumentasi) tercakup di `03_MIGRATION_SPEC.md`, tidak ada gap. Siap lanjut ke Step 5 (Acceptance Criteria & Test Plan) — dasar acceptance criteria adalah `01b_BASELINE_SPEC.md`, BUKAN migration spec.
+
+> **Catatan soal gate ini:** berbeda dari Step 1 (butuh judgment bisnis manusia), Step 4 sifatnya audit cakupan yang objektif/enumerable (elemen source ada di spec atau tidak) — AI menandai lulus sendiri, TAPI tetap dilaporkan eksplisit ke user (lihat riwayat chat) supaya bisa dikoreksi kalau ada elemen yang terlewat.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -111,7 +113,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Selesai | Tidak ada gate formal — 2 finding baru (MF-01, MF-02) di `FINDINGS.md` |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai | — |
-| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
+| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24, self-verified) |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
