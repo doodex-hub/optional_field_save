@@ -1,4 +1,9 @@
 .claude/backfill-command-log.jsonl
 __pycache__/
 *.pyc
+*.pyo
 docker-env/logs/
+
+# migration-tool CLI bootstrap (menyusul, project ini juga memakai migration-tool setelah backfill/17.0)
+.claude/migration-tool-command-log.jsonl
+.claude/settings.local.json
