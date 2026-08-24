@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 1 — Intake & Scope, sedang dikerjakan.** Bootstrap Mode Git (branch `migration/18.0` dibuat dari `origin/backfill/17.0`, `source-codebase` di-clone) sudah selesai. `01a_MIGRATION_INTAKE.md` dan `01b_BASELINE_SPEC.md` baru ditulis draft pertama — menunggu review user sebelum gate step 1 ditutup.
+**Step 1 — Intake & Scope, gate LULUS (disetujui user 2026-08-24).** Bootstrap Mode Git selesai (branch `migration/18.0` dibuat dari `origin/backfill/17.0`, sudah di-push ke `origin/migration/18.0`; `source-codebase` di-clone; `.claude/settings.json` sudah diisi path absolut). `01a_MIGRATION_INTAKE.md` dan `01b_BASELINE_SPEC.md` sudah direview dan disetujui user — termasuk konfirmasi F-10/F-11 (bug lama) WAJIB dipertahankan, source dianggap dibekukan selama migrasi. Lanjut ke Step 2 (Diff & Compatibility Analysis vs `native-target` odoo18).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -108,7 +108,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 | # | Step | Dokumen | Status | Gate |
 |---|---|---|---|---|
-| 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✅ Draft/selesai ditulis | ⏳ Menunggu review user |
+| 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ⬜ Belum mulai | Tidak ada gate formal |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ⬜ Belum mulai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |

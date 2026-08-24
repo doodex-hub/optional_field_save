@@ -3,7 +3,7 @@
 **Step:** 1 — Intake & Scope
 **Versi:** 17.0 → 18.0
 **Tanggal:** 2026-08-24
-**Status:** Draft — menunggu review user
+**Status:** ✔️ Disetujui user (2026-08-24) — gate lulus
 
 ---
 
