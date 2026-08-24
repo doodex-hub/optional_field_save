@@ -1,4 +1,4 @@
-name: optional_field_save_backfill
+name: optional_field_save_migration_18
 
 services:
   db:
@@ -11,7 +11,7 @@ services:
       - db-data:/var/lib/postgresql/data
 
   odoo:
-    image: odoo:17.0
+    image: odoo:18.0
     depends_on:
       - db
     environment:
@@ -19,12 +19,12 @@ services:
       USER: odoo
       PASSWORD: odoo
     ports:
-      - "8079:8069"
+      - "8090:8069"
     volumes:
-      - D:/Kuncoro/doodex/repo/optional-field-save-17/optional_field_save:/mnt/extra-addons/optional_field_save
+      - ../optional_field_save:/mnt/extra-addons/optional_field_save
       - ./logs:/var/log/odoo
     command: >
-      odoo -d optional_field_save_test
+      odoo -d optional_field_save_18_test
       -i optional_field_save
       --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
       --test-enable

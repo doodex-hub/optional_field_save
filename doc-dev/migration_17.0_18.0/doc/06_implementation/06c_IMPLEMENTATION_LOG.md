@@ -25,7 +25,7 @@
 |---|---|---|
 | A1 | ✅ Selesai | 2026-08-24 |
 | A2 | N/A — tidak ada XML | 2026-08-24 |
-| G1 (checkpoint Fase A) | ⏳ Menunggu keputusan mode eksekusi (lihat di bawah) | — |
+| G1 (checkpoint Fase A) | ✅ **Pass** (Mode C, lihat "Riwayat Percobaan G1" di bawah) | 2026-08-24 |
 | A3 | N/A — tidak ada wizard/TransientModel, ACL tidak disentuh (F-01 port apa adanya) | 2026-08-24 |
 | A4 | ✅ Selesai (struktur folder sudah konsisten, tidak ada perubahan) | 2026-08-24 |
 | A5 | ✅ Selesai (tidak ada override `create()`/API Python yang terpengaruh, `models/res_partner.py` byte-identik) | 2026-08-24 |
@@ -41,11 +41,13 @@
 
 ## Riwayat Percobaan G1 (Install Test)
 
-> **Belum dijalankan** — perlu keputusan mode eksekusi dari dev dulu (lihat `06a_CODE_MIGRATION_PHASES.md` "Checkpoint G1"). Environment sesi ini adalah Claude Code CLI (shell persisten) sehingga **Mode C (AI jalankan langsung via Docker)** tersedia sebagai opsi, selain Mode A (manual dev). Ditanyakan ke dev di chat sesi ini — lihat riwayat percakapan untuk keputusan final.
+> Dijalankan **Mode C** (AI eksekusi langsung, Claude Code CLI + Docker Desktop lokal) — `docker-env/docker-compose.yml` diinstansiasi dari template backfill (`source-codebase/docker-env/docker-compose.yml`), image diganti `odoo:18.0`, volume mount ke `target-codebase/optional_field_save`, db/project name diberi suffix `_migration_18`/`_18_test` supaya tidak bentrok dengan container project migrasi lain yang mungkin jalan bersamaan.
 
 | # | Dijalankan setelah fase | Mode | Hasil | Error (kalau fail) | Tanggal |
 |---|---|---|---|---|---|
-| 1 | A1 (tidak ada A2 relevan) | *(belum dijalankan)* | — | — | — |
+| 1 | A1 + E (semua fase kode selesai, tidak ada A2/A3 yang relevan) | C | ✅ **Pass** — 13 modul (`base`+`web`+dependency Enterprise-independen bawaan image `odoo:18.0`) loaded, `optional_field_save` loaded 0.28s/62 queries, **0 failed, 0 error(s) of 4 tests**. Test F-10 (`AccessError` dilempar benar) dan F-11 (`default={}`→`False`) keduanya lolos, konsisten `01b_BASELINE_SPEC.md`. | — | 2026-08-24 |
+
+**Catatan cakupan:** G1 ini HANYA memvalidasi install + 4 test Python (level ORM/backend). **Rewrite JS (MF-01, `computeOptionalActiveFields`) dan verifikasi MF-02 (`this.orm` di `webclient.js`) BELUM tervalidasi** — keduanya butuh eksekusi browser nyata (tour test/G2/Step 9), bukan tercakup test Python yang ada. Container di-teardown (`docker compose down -v`) setelah G1 selesai — tidak dibiarkan hidup.
 
 ---
 
