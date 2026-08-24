@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 4 — Spec Completeness Review, gate LULUS (self-verified AI, enumerasi objektif — lihat catatan di bawah).** Semua elemen source module (models, controllers, security, static/js, manifest, aset statis, dokumentasi) tercakup di `03_MIGRATION_SPEC.md`, tidak ada gap. Siap lanjut ke Step 5 (Acceptance Criteria & Test Plan) — dasar acceptance criteria adalah `01b_BASELINE_SPEC.md`, BUKAN migration spec.
+**Step 5 — Acceptance Criteria & Test Plan, selesai ditulis.** 10 AC diturunkan dari `01b_BASELINE_SPEC.md` (BSL-NNN), termasuk AC-03-01 (verifikasi khusus keputusan `super()` MF-01) dan AC-07-01 (verifikasi eksekusi nyata MF-02). 4 test Python dari backfill dikonfirmasi ISI-nya nyata (bukan stub) — tinggal di-copy ke `target-codebase` Step 6, bukan ditulis ulang. Owl/JS (4 AC) WAJIB tour test baru, belum pernah ada di backfill. Siap lanjut ke **Step 6 — Code Migration** (titik pertama edit kode module beneran).
 
 > **Catatan soal gate ini:** berbeda dari Step 1 (butuh judgment bisnis manusia), Step 4 sifatnya audit cakupan yang objektif/enumerable (elemen source ada di spec atau tidak) — AI menandai lulus sendiri, TAPI tetap dilaporkan eksplisit ke user (lihat riwayat chat) supaya bisa dikoreksi kalau ada elemen yang terlewat.
 
@@ -114,7 +114,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Selesai | Tidak ada gate formal — 2 finding baru (MF-01, MF-02) di `FINDINGS.md` |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24, self-verified) |
-| 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
+| 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Selesai | Tidak ada gate formal |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
