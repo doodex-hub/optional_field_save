@@ -11,7 +11,7 @@
 | ID | Judul | Ditemukan di Step | Tag | Prioritas | Status |
 |---|---|---|---|---|---|
 | MF-01 | `ListRenderer.getOptionalActiveFields()` dihapus di 18.0 — override modul jadi dead code kalau tidak di-rewrite | Step 2 | `[GAP-MIGRASI]` | **Tinggi** | Terbuka — jadi input wajib `03_MIGRATION_SPEC.md` |
-| MF-02 | `this.orm` kemungkinan `undefined` di `webclient.js` patch — belum pernah diverifikasi eksekusi nyata | Step 2 | `[PERLU-KEPUTUSAN]` | **Tinggi (kondisional)** | Terbuka — wajib verifikasi browser nyata di Step 9 sebelum disimpulkan |
+| MF-02 | `this.orm` `undefined` di `webclient.js` — **DIKONFIRMASI: webclient CRASH TOTAL (blank page) setiap kali login**, direproduksi identik di 17.0 ASLI (source-codebase, tidak dimodifikasi) maupun 18.0 | Step 2 (dugaan) → **dikonfirmasi Step 6/G2** (2026-08-24) | `[DIWARISI-SOURCE]` — bug pre-existing, BUKAN regresi migrasi | **KRITIS** | **Terbuka — WAJIB keputusan pemilik modul sebelum lanjut Step 8** |
 | MF-03 | F-10 (write `res.partner` gagal silent untuk user tanpa grup Contact Creation) — dipastikan tetap identik di 18.0 | Step 1 (backfill), dikonfirmasi ulang Step 2 | `[DIWARISI-SOURCE]` | Tinggi | Dikonfirmasi tetap sama — tidak perlu tindakan migrasi, WAJIB dipertahankan |
 | MF-04 | F-11 (`default={}` selalu jadi `False`) — dipastikan tetap identik di 18.0 | Step 1 (backfill), dikonfirmasi ulang Step 2 | `[DIWARISI-SOURCE]` | Sedang | Dikonfirmasi tetap sama — tidak perlu tindakan migrasi, WAJIB dipertahankan |
 
@@ -29,16 +29,34 @@
 **Rekomendasi:** `03_MIGRATION_SPEC.md` step 3 WAJIB merencanakan override baru yang men-target `computeOptionalActiveFields()`: baca sessionStorage dulu (fallback localStorage, logic sama seperti sekarang), RETURN dict aktif fields (bukan mutasi `this.optionalActiveFields` langsung), hapus baris pemanggilan `this.props.onOptionalFieldsChanged` (prop itu sendiri sudah dihapus dari core 18.0, lihat `DIFF-04`).
 **Keputusan pemilik modul:** *(kosong — diisi manusia, atau dikonfirmasi di gate Step 4)*
 
-### MF-02 — `this.orm` kemungkinan `undefined` di `webclient.js` patch
-**Ditemukan di:** Step 2 (2026-08-24)
-**Tag:** `[PERLU-KEPUTUSAN]`
+### MF-02 — `this.orm` `undefined` di `webclient.js` — webclient CRASH TOTAL setiap login (DIKONFIRMASI eksekusi nyata)
+**Ditemukan di:** Step 2 (dugaan dari review statis), **dikonfirmasi Step 6/G2 via eksekusi browser nyata** (2026-08-24)
+**Tag:** `[DIWARISI-SOURCE]` — bug pre-existing di source 17.0, BUKAN regresi migrasi (dikonfirmasi identik di kedua versi)
 **Ref:** `DIFF-06` (`02_diff/02_DIFF_ANALYSIS.md`)
 **Lokasi:** `optional_field_save/static/src/js/webclient.js:14-34` (method `getOptionalActiveFields()` milik modul, memanggil `this.orm.call(...)`)
-**Deskripsi:** Patch `WebClient.prototype.setup()` di modul ini TIDAK PERNAH menginisialisasi `this.orm` (tidak ada `useService("orm")` di file ini). Dicek langsung ke `native-source` (odoo17) dan `native-target` (odoo18) — `WebClient.setup()` bawaan Odoo JUGA tidak pernah men-set `this.orm` di kedua versi. Jadi `this.orm` kemungkinan besar selalu `undefined`, di 17.0 MAUPUN 18.0 — ini BUKAN version-diff, kemungkinan bug pre-existing yang belum pernah ketahuan.
-**Dampak:** Kalau benar `undefined`, `this.orm.call(...)` melempar `TypeError` setiap kali webclient mount — method ini dipanggil fire-and-forget tanpa `await`/try-catch (lihat BSL-001/002), jadi errornya cuma muncul sebagai unhandled promise rejection di console browser, TIDAK menghentikan aplikasi. Efek fungsionalnya: load-preferensi-dari-DB-ke-sessionStorage saat webclient mount (BSL-002) gagal total secara silent — TAPI `list_renderer.js` sendiri masih fallback ke `localStorage` (jalur terpisah), jadi user tetap "kelihatan" preferensinya tersimpan di browser yang sama, cuma tidak pernah benar-benar ter-load dari DB. Ini BISA menjelaskan kenapa F-10 (write gagal silent) belum tentu satu-satunya sebab fitur lintas-browser tidak jalan untuk sebagian user — mekanisme LOAD-nya sendiri mungkin sudah gagal duluan, terlepas dari masalah write.
-**Status verifikasi:** BELUM diverifikasi eksekusi nyata. Backfill (`source-codebase/doc-dev/backfill/test/04A_DEV_TESTING.md`) hanya menguji level Python/ORM (`tests/test_optional_field_save.py`), tidak ada test browser/Owl yang menjalankan `webclient.js` sungguhan.
-**Rekomendasi:** WAJIB diverifikasi via eksekusi browser nyata di Step 9 (Dev Testing) — buka DevTools console saat webclient mount, cek apakah muncul `TypeError` terkait `this.orm`. Kalau terkonfirmasi bug nyata: (a) ini SUDAH ada di 17.0 produksi (bukan regresi migrasi) — per aturan source-of-truth, TETAP dipertahankan apa adanya (jangan "diperbaiki" diam-diam) kecuali user eksplisit minta diperbaiki sebagai perubahan disengaja; (b) `01b_BASELINE_SPEC.md` BSL-002 perlu direvisi untuk mencatat temuan ini sebagai `[GAP]` (spec lama/pemahaman awal vs kode aktual yang ternyata gagal).
-**Keputusan pemilik modul:** *(kosong — diisi manusia setelah verifikasi Step 9)*
+**Deskripsi (revisi setelah eksekusi nyata — jauh lebih parah dari dugaan awal):** Patch `WebClient.prototype.setup()` di modul ini TIDAK PERNAH menginisialisasi `this.orm`. Dicek langsung ke `native-source` (odoo17) dan `native-target` (odoo18) — `WebClient.setup()` bawaan Odoo JUGA tidak pernah men-set `this.orm` di kedua versi.
+
+**DIBUKTIKAN LANGSUNG (2026-08-24), DUA environment terpisah:**
+1. **`target-codebase` (18.0, kode hasil migrasi)** — server dinyalakan (`docker compose up`, akses `http://localhost:8090`), login `admin`/`admin` via browser sungguhan (Claude Browser tool). Hasil: **halaman blank total** setelah login, console browser menunjukkan:
+   ```
+   TypeError: Cannot read properties of undefined (reading 'call')
+       at WebClient.getOptionalActiveFields (...)
+       at WebClient.setup (...)
+       at new ComponentNode (...) → App.mount → startWebClient
+   ```
+2. **`source-codebase` (17.0, kode ASLI, tidak dimodifikasi sama sekali — mount read-only)** — server terpisah dinyalakan (`odoo:17.0` image resmi), login sama persis. Hasil: **BLANK TOTAL IDENTIK**, stack trace sama persis (cuma nomor baris bundle beda karena versi asset berbeda).
+
+**Kesimpulan:** ini BUKAN silent/fire-and-forget error seperti dugaan awal — `this.orm.call(...)` dievaluasi SEBELUM `await` pertama tereksekusi (member access `undefined.call` throw SYNCHRONOUS), jadi exception menjalar langsung ke `WebClient.setup()` (tidak ada try/catch di sana, beda dari `setDatabase()` di `list_renderer.js` yang punya try/catch) → Owl gagal me-mount `WebClient` → **seluruh backend Odoo blank untuk SEMUA user, setiap kali login, di 17.0 MAUPUN 18.0.**
+
+**Dampak:** Modul ini, sebagaimana kode berjalan sekarang, membuat instalasi Odoo manapun (yang meng-install modul ini) **TIDAK BISA DIPAKAI SAMA SEKALI** — bukan cuma fitur optional-field yang gagal, TAPI SELURUH backend Odoo (Sales, Inventory, Accounting, dst — semuanya lewat webclient yang sama). Ini mengubah total pemahaman F-10/BSL-002 sebelumnya ("gagal silent, localStorage tetap fallback") — kenyataannya user bahkan TIDAK PERNAH sampai ke titik toggle kolom optional, karena halaman sudah blank duluan.
+
+**Pertanyaan terbuka yang HANYA bisa dijawab pemilik modul:** kalau bug ini semenjak awal membuat modul tidak bisa dipakai sama sekali, bagaimana modul ini bisa "berjalan di produksi" (asumsi awal project ini)? Kemungkinan: (a) modul ini SEBENARNYA belum pernah benar-benar dipakai/diinstall di instance produksi manapun (cuma listing Apps Store, F-03/F-09 sudah mengindikasikan gejala serupa — README overclaim, tidak ada UI), (b) ada environment spesifik (versi Odoo/addon lain) di mana entah bagaimana `this.orm` kebetulan ter-set, yang belum ditemukan, atau (c) versi yang benar-benar dipakai user berbeda dari yang ada di branch `backfill/17.0`/`origin/17.0` yang dicek project ini.
+
+**Rekomendasi:** **STOP — WAJIB keputusan pemilik modul sebelum Step 8 dilanjutkan.** Opsi:
+1. **Perbaiki bug ini sebagai perubahan disengaja** (tambah `this.orm = useService("orm")` di `webclient.js`) — ini TEKNIS keluar dari "port bug-for-bug", tapi tanpa ini modul migrasi hasil Step 6 sekarang **sama-sama tidak bisa dipakai** seperti aslinya. Risiko rendah (perbaikan 1 baris, konsisten pola yang sudah dipakai `list_renderer.js`).
+2. **Port apa adanya (pertahankan bug)** — kalau pemilik modul punya alasan spesifik (mis. ingin submit ke Apps Store dulu untuk versi 18.0 yang "identik" dengan 17.0 sebelum audit ulang lebih besar).
+3. **Investigasi dulu** kenapa modul ini "sudah dipakai user" padahal blank total — cek apakah ada versi lain dari modul ini yang beredar (mis. commit lain, atau environment lain), sebelum memutuskan.
+**Keputusan pemilik modul:** *(kosong — diisi manusia, WAJIB sebelum Step 8)*
 
 ### MF-03 — F-10 dipastikan tetap identik di 18.0
 **Ditemukan di:** Step 1 (backfill, sebelum project ini), dikonfirmasi ulang Step 2 (2026-08-24)

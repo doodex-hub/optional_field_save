@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 6 — Code Migration, kode selesai + G1 LULUS.** `__manifest__.py` version bump ke `18.0.1.0.0` (Fase A1), rewrite `computeOptionalActiveFields()` di `list_renderer.js` (Fase E, solusi MF-01). G1 (install test, Mode C via Docker) dijalankan langsung — modul terinstall bersih di Odoo 18.0, 4 test Python backfill 100% lolos (termasuk F-10/F-11). **Masih perlu G2/tour test untuk verifikasi JS (MF-01 rewrite, MF-02)** — belum tercakup test Python. Siap lanjut ke Step 8 (Code Review) sebelum Step 9 (Dev Testing, termasuk tour test JS).
+**🛑 STOP — Step 6 G2 menemukan bug KRITIS (MF-02), butuh keputusan pemilik modul sebelum Step 8 lanjut.** G1 lulus bersih (install + 4 test Python). Tapi G2 (browser nyata) menemukan: **webclient blank total setiap login**, `TypeError: this.orm undefined` di `webclient.js` — DIKONFIRMASI direproduksi identik di 17.0 ASLI (source-codebase, tidak dimodifikasi) maupun 18.0. Ini bug pre-existing (bukan regresi migrasi), tapi jauh lebih parah dari dugaan awal (bukan silent, tapi crash total). Detail lengkap + opsi keputusan: `FINDINGS.md` MF-02. **Menunggu jawaban user sebelum lanjut.**
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
