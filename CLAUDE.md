@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 1 — Intake & Scope, gate LULUS (disetujui user 2026-08-24).** Bootstrap Mode Git selesai (branch `migration/18.0` dibuat dari `origin/backfill/17.0`, sudah di-push ke `origin/migration/18.0`; `source-codebase` di-clone; `.claude/settings.json` sudah diisi path absolut). `01a_MIGRATION_INTAKE.md` dan `01b_BASELINE_SPEC.md` sudah direview dan disetujui user — termasuk konfirmasi F-10/F-11 (bug lama) WAJIB dipertahankan, source dianggap dibekukan selama migrasi. Lanjut ke Step 2 (Diff & Compatibility Analysis vs `native-target` odoo18).
+**Step 2 — Diff & Compatibility Analysis, selesai ditulis (belum direview user, tidak ada gate formal untuk step ini).** Ditemukan 2 risiko besar: (1) `ListRenderer.getOptionalActiveFields()` dihapus total di 18.0 (MF-01, wajib rewrite di step 3), (2) kemungkinan bug pre-existing `this.orm` undefined di `webclient.js` (MF-02, wajib verifikasi eksekusi nyata di step 9). F-10/F-11 dikonfirmasi tetap identik di 18.0 tanpa perubahan (MF-03/MF-04). Siap lanjut ke Step 3 (Migration Spec teknis) begitu user sempat baca `02_DIFF_ANALYSIS.md` + `FINDINGS.md`.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -109,7 +109,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | # | Step | Dokumen | Status | Gate |
 |---|---|---|---|---|
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
-| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ⬜ Belum mulai | Tidak ada gate formal |
+| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Selesai | Tidak ada gate formal — 2 finding baru (MF-01, MF-02) di `FINDINGS.md` |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ⬜ Belum mulai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
