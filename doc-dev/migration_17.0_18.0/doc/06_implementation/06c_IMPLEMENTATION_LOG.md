@@ -37,7 +37,7 @@
 | D2 | N/A — dikonfirmasi Applicability Check | 2026-08-24 |
 | E | ✅ Selesai (rewrite `computeOptionalActiveFields`, lihat entry di bawah) | 2026-08-24 |
 | F | N/A — dikonfirmasi Applicability Check | 2026-08-24 |
-| G2 (validasi akhir/runtime) | ⏳ Menunggu G1 + environment eksekusi | — |
+| G2 (validasi akhir/runtime) | ✅ **Pass (setelah fix MF-02)**, lihat entri di bawah | 2026-08-24 |
 
 ## Riwayat Percobaan G1 (Install Test)
 
@@ -104,6 +104,23 @@
   - Tidak membersihkan dead import (`registry` di `list_renderer.js` tidak pernah dipakai di body) — bukan perubahan wajib kompatibilitas, di luar scope
 - **Risiko:** MEDIUM (rewrite logic inti, tapi scope sempit — 1 method, sudah melalui review desain eksplisit di Step 3)
 - **Status:** ✅ Selesai (kode) — ⚠️ **Perlu verifikasi eksekusi nyata** (G1 install test, lalu tour test Step 9 untuk AC-02-02/AC-03-01)
+
+## [G2] Validasi Runtime — Ditemukan & Diperbaiki Bug Kritis (MF-02)
+
+- **Scope:** Browser nyata (Claude Browser tool), login ke instance Docker hasil G1
+- **Item spec (ref):** `FINDINGS.md` MF-02
+- **Aksi:**
+  1. G2 pertama (kode sebelum fix): login → webclient **blank total**, console `TypeError: Cannot read properties of undefined (reading 'call') at WebClient.getOptionalActiveFields`.
+  2. Verifikasi silang: instance TERPISAH dinyalakan dari `source-codebase` (17.0 asli, mount read-only, TIDAK dimodifikasi) — crash **identik persis**. Konfirmasi ini bug pre-existing, bukan regresi migrasi.
+  3. Eskalasi ke user (STOP, format sesuai `CLAUDE.md`) — user memutuskan: **perbaiki sebagai perubahan disengaja**.
+  4. `webclient.js`: tambah `const { useService } = require("@web/core/utils/hooks");` + `this.orm = useService("orm");` di baris pertama `setup()`.
+  5. G1 diulang: `0 failed, 0 error(s) of 4 tests` — tidak ada regresi.
+  6. G2 diulang (tab browser baru, hindari cache): TIDAK ADA `TypeError`, `POST .../res.partner/search_read` sukses `200 OK`, sequence boot webclient normal, konsisten 2x percobaan.
+- **Secara eksplisit TIDAK dilakukan:**
+  - Tidak mengubah `list_renderer.js`/`setDatabase()`/`user_menu_items.js` — fix ini sempit, hanya `webclient.js`
+  - Render visual navbar penuh TIDAK terkonfirmasi 100% di tool ini (`document.visibilityState` tetap `"hidden"`, keterbatasan sandbox browser tool, bukan gejala kode) — direkomendasikan dev cek manual sekali lagi
+- **Risiko:** Sudah LOW setelah fix (perubahan 1 baris, scope sempit, diverifikasi eksekusi ulang) — sebelumnya CRITICAL
+- **Status:** ✅ Selesai — lihat `FINDINGS.md` MF-02 untuk detail lengkap
 
 ---
 

@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**🛑 STOP — Step 6 G2 menemukan bug KRITIS (MF-02), butuh keputusan pemilik modul sebelum Step 8 lanjut.** G1 lulus bersih (install + 4 test Python). Tapi G2 (browser nyata) menemukan: **webclient blank total setiap login**, `TypeError: this.orm undefined` di `webclient.js` — DIKONFIRMASI direproduksi identik di 17.0 ASLI (source-codebase, tidak dimodifikasi) maupun 18.0. Ini bug pre-existing (bukan regresi migrasi), tapi jauh lebih parah dari dugaan awal (bukan silent, tapi crash total). Detail lengkap + opsi keputusan: `FINDINGS.md` MF-02. **Menunggu jawaban user sebelum lanjut.**
+**Step 6 selesai penuh — kode, G1, G2 semua lulus.** Sepanjang G2 ditemukan bug KRITIS pre-existing (MF-02: webclient blank total setiap login, direproduksi identik di 17.0 ASLI maupun 18.0) — dieskalasi ke user, diputuskan **diperbaiki sebagai perubahan disengaja** (`this.orm = useService("orm")` di `webclient.js`, satu-satunya penyimpangan dari "port bug-for-bug" di project ini). G1+G2 diverifikasi ulang setelah fix, keduanya lulus. Detail lengkap: `FINDINGS.md` MF-02, `06c_IMPLEMENTATION_LOG.md`. Siap lanjut ke **Step 8 (Code Review)** — Step 7 di-skip (n/a, port kode saja).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -117,7 +117,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24, self-verified) |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Selesai | Tidak ada gate formal |
-| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | 🔄 Kode + G1 selesai, G2/tour JS pending | — (disiplin per-fase A1→G2, lihat `06c_IMPLEMENTATION_LOG.md`) |
+| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (kode+G1+G2, termasuk fix MF-02) | — (disiplin per-fase A1→G2, lihat `06c_IMPLEMENTATION_LOG.md`) |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
