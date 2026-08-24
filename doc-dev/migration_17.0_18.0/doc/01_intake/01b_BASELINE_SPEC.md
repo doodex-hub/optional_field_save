@@ -13,7 +13,9 @@
 
 ## Ringkasan untuk Review — Perlu Konfirmasi User
 
-Tally provenance: 10 klaim `[MATCH]` (semua tervalidasi terhadap `01A_FUNCTIONAL_SPEC.md`/`FINDINGS.md`), 0 `[GAP]`, 0 `[NO-SPEC]` — modul ini sudah sangat terdokumentasi dari backfill, tidak ada celah.
+Tally provenance (direvisi 2026-08-24): 9 klaim `[MATCH]`, 1 `[GAP]` (BSL-008), 0 `[NO-SPEC]`.
+
+0. **[BSL-008] `[GAP]` — koreksi dokumentasi, bukan temuan migrasi:** spec lama backfill (`01A_FUNCTIONAL_SPEC.md`) salah klaim `application: True` — kode aktual `backfill/17.0` sudah `application: False` SEBELUM spec itu ditulis (salah baca manifest saat sesi backfill, bukan perubahan belakangan). Tidak ada dampak fungsional, tidak butuh keputusan — sudah dikoreksi di §8 di bawah.
 
 1. **[BSL-009] `[MATCH]` (F-10, Tinggi) — bug pre-existing yang HARUS dipertahankan:** user internal biasa tanpa grup "Contact Creation" GAGAL SILENT saat menyimpan preferensi ke DB (fallback localStorage tetap jalan, tidak ada notifikasi UI). Ini prioritas tertinggi untuk tidak "diperbaiki tanpa sadar" saat migrasi — behavior JS yang menangkap `AccessError` di `try/catch` lalu cuma `console.error` harus tetap identik di 18.0.
 2. **[BSL-010] `[MATCH]` (F-11, Sedang):** `fields.Json(default={})` tidak pernah menghasilkan `{}` — selalu `False` sampai first-write. Perilaku field Odoo core (bukan bug modul), harus tetap sama di 18.0 (field `Json` core 18.0 diasumsikan berperilaku sama — perlu dikonfirmasi ulang di step 2 diff analysis kalau ada perubahan behavior `fields.Json` 17→18).
@@ -56,7 +58,7 @@ Odoo core menyimpan status kolom "optional" (kolom yang bisa di-toggle show/hide
 - `[BSL-007]` `[MATCH]` (ref: BR-07, AC-04-01) Custom logout menu item (`user_menu_items.js`, registry `user_menuitems` key `"log_out"`) menghapus SEMUA key `sessionStorage` yang mengandung substring `"optional_field"` SEBELUM redirect ke `/web/session/logout` — mencegah sessionStorage user A bocor terbaca user B di tab/browser yang sama. `localStorage` TIDAK dibersihkan (scope cleanup sengaja terbatas ke sessionStorage, bukan bug).
 
 ### Entry Point
-- `[BSL-008]` `[MATCH]` (ref: BR-08, AC-05-01, F-03) `application: True` di manifest TANPA `views/`/menu apapun — modul muncul di Apps grid tapi tidak ada apapun untuk dibuka. Kemungkinan besar untuk visibilitas listing Apps Store (`price: 10 USD`), bukan indikasi ada UI. Perlu dipertahankan apa adanya (bukan ditambah UI) kecuali user minta lain.
+- `[BSL-008]` `[GAP]` (ref: BR-08, AC-05-01, F-03) **Spec lama (`01A_FUNCTIONAL_SPEC.md`):** `application: True`, diklaim untuk visibilitas listing Apps Store (`price: 10 USD`). **Kode aktual (dikonfirmasi `git log -p` pada `backfill/17.0`, 2026-08-24):** `application: False`, dan key `price`/`currency` sudah tidak ada sama sekali — keduanya diubah bersamaan di commit `bbf6a87` ("remove price", 2024-08-12), **SEBELUM** sesi backfill menulis `01A_FUNCTIONAL_SPEC.md` (commit `97e652e`, jauh setelahnya). Spec lama salah baca state manifest saat ditulis — bukan perubahan yang terjadi setelahnya. **Konsekuensi:** modul TIDAK muncul sebagai "Application" terinstal di Apps grid (beda dari klaim spec lama), murni modul teknis biasa — tidak ada perubahan behavior fungsional lain. `target-codebase` (checkout dari `backfill/17.0`) sudah otomatis `application: False`, TIDAK perlu diubah apapun saat migrasi (kode menang, port apa adanya).
 
 ## 5. Server-Side Logic dengan Side Effect
 
