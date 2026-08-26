@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 6 selesai penuh — kode, G1, G2 semua lulus.** Sepanjang G2 ditemukan bug KRITIS pre-existing (MF-02: webclient blank total setiap login, direproduksi identik di 17.0 ASLI maupun 18.0) — dieskalasi ke user, diputuskan **diperbaiki sebagai perubahan disengaja** (`this.orm = useService("orm")` di `webclient.js`, satu-satunya penyimpangan dari "port bug-for-bug" di project ini). G1+G2 diverifikasi ulang setelah fix, keduanya lulus. Detail lengkap: `FINDINGS.md` MF-02, `06c_IMPLEMENTATION_LOG.md`. Siap lanjut ke **Step 8 (Code Review)** — Step 7 di-skip (n/a, port kode saja).
+**Step 8 — Code Review, gate LULUS.** 0 issue 🔴/🟡, 4 info 🔵 (semua pre-existing/kosmetik, di luar scope). Gap Analysis vs spec & AC bersih — satu-satunya deviasi (MF-02 fix) sudah ditelusuri balik ke `03_MIGRATION_SPEC.md` §4 "Revisi Pasca-Tulis". Cek tabrakan nama method/field dengan core 18.0 (dua arah) — tidak ada. **Catatan penting untuk Step 9:** beberapa AC (AC-02-01/02/03-01/04-01) baru "Implemented + review statis", BELUM tour-tested browser — Step 9 wajib menutup ini. Siap lanjut ke **Step 9 (Dev Testing)**.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -119,7 +119,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Selesai | Tidak ada gate formal |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (kode+G1+G2, termasuk fix MF-02) | — (disiplin per-fase A1→G2, lihat `06c_IMPLEMENTATION_LOG.md`) |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
-| 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
+| 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |

@@ -101,6 +101,8 @@ N/A — port kode saja, tidak ada instance produksi (`01a_MIGRATION_INTAKE.md` �
 - Port apa adanya: `saveOptionalActiveFields()`, `setDatabase()`, `webclient.js`, `user_menu_items.js`, `models/res_partner.py`
 
 ### Di Luar Scope (sengaja, disetujui di intake)
-- Menambahkan `useService("orm")` ke `webclient.js` untuk "memperbaiki" MF-02 — ditunda sampai Step 9 memverifikasi apakah ini genuinely bug yang perlu keputusan user, atau justru behavior yang harus dipertahankan
 - Housekeeping F-01 (dead `ir.model.access.csv`), F-04 (dead controller), F-05 (file Google verification nyasar) — keputusan independen pemilik modul, bukan bagian migrasi versi
 - Mengadopsi fitur PWA-aware logout redirect (DIFF-07) — fitur baru 18.0, bukan bagian scope port-kode
+
+### Revisi Pasca-Tulis (Step 6/G2, 2026-08-24)
+- **Menambahkan `useService("orm")` ke `webclient.js` (MF-02) — SEMULA "Di Luar Scope" di atas, DIREVISI setelah verifikasi eksekusi nyata di G2.** G2 menemukan bug ini bukan cuma "kondisional/silent" seperti dugaan awal, tapi CRASH TOTAL webclient (blank page setiap login), dikonfirmasi identik di 17.0 asli. Dieskalasi ke user, disetujui sebagai perubahan disengaja. Detail lengkap: `FINDINGS.md` MF-02, `06_implementation/06c_IMPLEMENTATION_LOG.md` entri "[G2] Validasi Runtime".
