@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 11 (final) — draft `11_UAT_CHECKLIST.md` selesai ditulis. SEMUA kerja teknis migrasi ini sudah tuntas** (Step 1-10 semua lulus). **Step 11 BUKAN sesuatu yang bisa AI "luluskan" sendiri** — 3 skenario UAT (T-01 s/d T-03, bahasa awam) + review item out-of-scope sudah disiapkan, kolom Actual/Status sengaja dikosongkan, MENUNGGU pemilik modul/stakeholder menjalankan sendiri dan mengisi Sign-off. Setelah itu, migrasi 17.0→18.0 modul `optional_field_save` selesai sepenuhnya.
+**🏁 MIGRASI SELESAI (dengan catatan).** Step 11 diisi ATAS INSTRUKSI EKSPLISIT pemilik modul ("anggap UAT sudah dijalankan, percaya AI test", 2026-08-26) — menyimpang dari default tool (biasanya WAJIB eksekusi tangan sendiri stakeholder). Actual/Status T-01/T-02/T-03 diisi berdasarkan bukti nyata Step 9/10 (BUKAN dikarang), penyimpangan dicatat eksplisit di `11_UAT_CHECKLIST.md` (banner + catatan Sign-off) untuk jejak audit. Tanda tangan formal TETAP tidak diisi/dipalsukan. **Rekomendasi tetap berlaku:** eksekusi tangan sendiri T-01/T-02/T-03 di Odoo sungguhan sebelum go-live produksi beneran, terutama backup database (belum dilakukan, lihat "Prasyarat Sebelum Go-Live" di `11_UAT_CHECKLIST.md`).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -122,7 +122,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
-| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Draft selesai, menunggu eksekusi manusia | ⏳ Menunggu sign-off stakeholder |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Selesai (diisi AI atas instruksi eksplisit, lihat catatan) | ✔️ Disetujui pemilik modul (2026-08-26, bukan eksekusi tangan sendiri — dicatat eksplisit) |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
 
