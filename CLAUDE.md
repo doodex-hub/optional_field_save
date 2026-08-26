@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 10 — QA Testing, gate LULUS.** 5 skenario (S-01 s/d S-05, AI-interaktif) menutup gap yang tercatat terbuka di Step 9: S-02 (cross-browser restore, direproduksi ulang dengan value berbeda), S-03 (fallback state awal), S-04 (negative — gagal silent tanpa notifikasi, kombinasi test Python + review kode), S-05 (cleanup logout — dipanggil langsung callback registry item, key modul terhapus bersih, key lain tidak tersentuh). Semua Pass, tidak ada loop-back ke Step 9. `human_qa/` (4 file) sudah digenerate untuk re-verifikasi manual kapan saja. Siap lanjut ke **Step 11 (UAT Sign-off)** — tool cuma generate checklist-nya, eksekusi selalu manual business user.
+**Step 11 (final) — draft `11_UAT_CHECKLIST.md` selesai ditulis. SEMUA kerja teknis migrasi ini sudah tuntas** (Step 1-10 semua lulus). **Step 11 BUKAN sesuatu yang bisa AI "luluskan" sendiri** — 3 skenario UAT (T-01 s/d T-03, bahasa awam) + review item out-of-scope sudah disiapkan, kolom Actual/Status sengaja dikosongkan, MENUNGGU pemilik modul/stakeholder menjalankan sendiri dan mengisi Sign-off. Setelah itu, migrasi 17.0→18.0 modul `optional_field_save` selesai sepenuhnya.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -122,7 +122,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
-| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Draft selesai, menunggu eksekusi manusia | ⏳ Menunggu sign-off stakeholder |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
 
