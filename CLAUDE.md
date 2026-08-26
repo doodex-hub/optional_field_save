@@ -102,7 +102,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-✔️ **Step 1 — Intake & Baseline Spec selesai, gate lulus (2026-08-26).** Branch `migration/19.0_target` dibuat dari `origin/migration/18.0`. Folder referensi dikonfirmasi dev: `native-target`/`native-target-enterprise` = `enterprise19.0` (gabungan), `native-source` = `odoo18`, `native-source-enterprise` = `enterprise18` (modul tidak pakai Enterprise, tetap dicek step 2 untuk konfirmasi status di 19.0). Source dikonfirmasi dibekukan selama migrasi, tidak ada dokumen pelengkap lain di luar repo ini. `01a_MIGRATION_INTAKE.md`+`01b_BASELINE_SPEC.md` (13 klaim BSL, semua `[MATCH]`) ditulis, `FINDINGS.md`+`PROMPT_LOG.md` diinisialisasi. **Lanjut ke Step 2 (Diff & Compatibility Analysis) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
+✅ **Step 2 — Diff & Compatibility Analysis selesai (2026-08-26).** Step 1 lulus gate. Step 2: 10 simbol native diverifikasi LANGSUNG ke `enterprise19.0` vs `odoo18` (bukan cuma baca knowledge base) — hasil: risiko migrasi terbesar warisan (`computeOptionalActiveFields`/`saveOptionalActiveFields`/`user.partnerId`/`useService("orm")`) **stabil, tidak berubah** 18.0→19.0. Satu breaking change BARU ditemukan: `res.users.groups_id`→`group_ids` (DIFF-09), memengaruhi 2 baris test fixture (`tests/test_optional_field_save.py:71,93`) — dicatat **MF-01** di `FINDINGS.md`, kandidat knowledge base di `migration-tool/migration-records/optional_field_save_18.0_19.0/SUMMARY.md`. **Lanjut ke Step 3 (Migration Spec) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -111,7 +111,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | # | Step | Dokumen | Status | Gate |
 |---|---|---|---|---|
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
-| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ⬜ Belum mulai | Tidak ada gate formal |
+| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Selesai | Tidak ada gate formal — 1 finding baru (MF-01) di `FINDINGS.md` |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ⬜ Belum mulai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
