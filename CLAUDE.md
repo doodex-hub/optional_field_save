@@ -102,7 +102,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-✔️ **Step 10 — QA Testing lulus gate (2026-08-26).** Step 1-6, 8-9 lulus. Step 7 N/A. Step 10: 5 skenario (S-01 Smoke, S-02 Main Flow, S-03 Detail, S-04/S-05 Negative) — S-02 (AC-02-02, kritis) diverifikasi live via JSON-RPC langsung ke server Docker (write+search_read persis method modul), sisanya via bukti eksekusi nyata tour Step 9 + review kode statis (browser pane sandbox tidak bisa interaktif sesi ini — didokumentasikan eksplisit). `human_qa/` companion folder (00-04) digenerate. Tidak ada kegagalan. **Lanjut ke Step 11 (UAT Sign-off) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
+🔄 **Migrasi TEKNIS selesai (Step 1-10 lulus penuh, 2026-08-26) — Step 11 (UAT) MENUNGGU pemilik modul.** Step 7 N/A. `11_UAT_CHECKLIST.md` sudah ditulis (3 skenario T-01/T-02/T-03 bahasa awam, precondition, review item out-of-scope) TAPI kolom Actual/Status/Sign-off SENGAJA dikosongkan — beda dari migrasi 17→18 sebelumnya (yang diisi AI atas instruksi eksplisit pemilik modul), migrasi ini BELUM dapat instruksi serupa. **Ini checkpoint yang memang didesain berhenti** (bukan pelanggaran "JALAN TERUS") — UAT sengaja bukan sesuatu yang AI isi sendiri kecuali diminta eksplisit. Menunggu pemilik modul: (a) jalankan T-01/T-02/T-03 sendiri, ATAU (b) instruksikan eksplisit AI memakai bukti Step 9/10 sebagai pengganti (seperti presedan 17→18).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -120,7 +120,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
-| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Draft ditulis, Actual/Status kosong | ⏳ Menunggu eksekusi tangan sendiri pemilik modul |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
 
