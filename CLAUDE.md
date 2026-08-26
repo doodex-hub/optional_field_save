@@ -102,7 +102,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-✔️ **Step 9 — Dev Testing lulus gate (2026-08-26).** Step 1-6, 8 lulus. Step 7 N/A. Step 9: audit kesiapan test (9a) — 5/5 method test dikonfirmasi `ok` (bukan stub, via AST parse), tidak ada AC prioritas tinggi tanpa test. Hasil eksekusi (G1 percobaan #3, di-reuse dari step 6): `0 failed, 0 error(s) of 5 tests`, tour `[7/7]` "tour succeeded" — semua 10 AC (AC-01 s/d AC-07) pass. **Lanjut ke Step 10 (QA Testing) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
+✔️ **Step 10 — QA Testing lulus gate (2026-08-26).** Step 1-6, 8-9 lulus. Step 7 N/A. Step 10: 5 skenario (S-01 Smoke, S-02 Main Flow, S-03 Detail, S-04/S-05 Negative) — S-02 (AC-02-02, kritis) diverifikasi live via JSON-RPC langsung ke server Docker (write+search_read persis method modul), sisanya via bukti eksekusi nyata tour Step 9 + review kode statis (browser pane sandbox tidak bisa interaktif sesi ini — didokumentasikan eksplisit). `human_qa/` companion folder (00-04) digenerate. Tidak ada kegagalan. **Lanjut ke Step 11 (UAT Sign-off) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -119,7 +119,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
-| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
+| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
