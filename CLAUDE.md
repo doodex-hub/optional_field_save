@@ -102,7 +102,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-✔️ **Step 8 — Code Review lulus gate (2026-08-26).** Step 1-6 lulus (G1+G2 pass, 5 file total berubah vs source 18.0 — dikonfirmasi `git diff --stat`). Step 7 N/A (port kode saja). Step 8: 0 🔴/0 🟡/1 🔵 issue, gap analysis vs migration spec DAN acceptance criteria semua ✅, cek tabrakan nama method/field dua arah terhadap `native-target` 19.0 bersih, MF-02 (perubahan di luar spec awal) ditangani sesuai protokol (dicatat dulu, dinilai low-risk, baru diperbaiki). **Lanjut ke Step 9 (Dev Testing) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
+✔️ **Step 9 — Dev Testing lulus gate (2026-08-26).** Step 1-6, 8 lulus. Step 7 N/A. Step 9: audit kesiapan test (9a) — 5/5 method test dikonfirmasi `ok` (bukan stub, via AST parse), tidak ada AC prioritas tinggi tanpa test. Hasil eksekusi (G1 percobaan #3, di-reuse dari step 6): `0 failed, 0 error(s) of 5 tests`, tour `[7/7]` "tour succeeded" — semua 10 AC (AC-01 s/d AC-07) pass. **Lanjut ke Step 10 (QA Testing) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -118,7 +118,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (kode+G1+G2, termasuk fix MF-02) | — |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
-| 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
+| 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
 
