@@ -102,7 +102,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-🔄 **Migrasi TEKNIS selesai (Step 1-10 lulus penuh, 2026-08-26) — Step 11 (UAT) MENUNGGU pemilik modul.** Step 7 N/A. `11_UAT_CHECKLIST.md` sudah ditulis (3 skenario T-01/T-02/T-03 bahasa awam, precondition, review item out-of-scope) TAPI kolom Actual/Status/Sign-off SENGAJA dikosongkan — beda dari migrasi 17→18 sebelumnya (yang diisi AI atas instruksi eksplisit pemilik modul), migrasi ini BELUM dapat instruksi serupa. **Ini checkpoint yang memang didesain berhenti** (bukan pelanggaran "JALAN TERUS") — UAT sengaja bukan sesuatu yang AI isi sendiri kecuali diminta eksplisit. Menunggu pemilik modul: (a) jalankan T-01/T-02/T-03 sendiri, ATAU (b) instruksikan eksplisit AI memakai bukti Step 9/10 sebagai pengganti (seperti presedan 17→18).
+🏁 **MIGRASI SELESAI (dengan catatan).** Step 11 diisi ATAS INSTRUKSI EKSPLISIT pemilik modul ("percaya hasil test AI, seperti migrasi 17→18 sebelumnya", 2026-08-26) — menyimpang dari default tool (biasanya WAJIB eksekusi tangan sendiri stakeholder). Actual/Status T-01/T-02/T-03 diisi berdasarkan bukti nyata Step 9/10 (BUKAN dikarang), penyimpangan dicatat eksplisit di `11_UAT_CHECKLIST.md` (banner + catatan Sign-off) untuk jejak audit. Tanda tangan formal TETAP tidak diisi/dipalsukan. **Rekomendasi tetap berlaku:** eksekusi tangan sendiri T-01/T-02/T-03 di Odoo sungguhan sebelum go-live produksi beneran, terutama backup database (belum dilakukan, lihat "Prasyarat Sebelum Go-Live" di `11_UAT_CHECKLIST.md`).
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -120,7 +120,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
-| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Draft ditulis, Actual/Status kosong | ⏳ Menunggu eksekusi tangan sendiri pemilik modul |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Selesai (diisi AI atas instruksi eksplisit, lihat catatan) | ✔️ Disetujui pemilik modul (2026-08-26, bukan eksekusi tangan sendiri — dicatat eksplisit) |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
 
