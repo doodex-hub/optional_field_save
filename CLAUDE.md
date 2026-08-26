@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 9 — Dev Testing, gate LULUS.** Tour test browser nyata (Mode D, Docker+Chrome) ditulis dan dijalankan — sepanjang prosesnya ditemukan **MF-05**, bug KRITIS BARU (`session.partner_id`/`session.uid` dihapus total di 18.0, genuine version-diff, BUKAN bug lama) yang membuat mekanisme inti modul (load+simpan preferensi) rusak total. Diperbaiki (`user.partnerId` dari `@web/core/user`), diverifikasi ulang: G1 tetap `0 failed`, tour test `0 failed, 0 error(s) of 5 tests`, AC-02-02 (load dari DB pasca-reload tanpa local storage) diverifikasi tambahan via RPC manual. Detail lengkap: `FINDINGS.md` MF-05, `09_DEV_TESTING.md`. Dua gap kecil dicatat terbuka (AC-04-01 belum tour-tested, tour reload-end-to-end-otomatis flaky di Tour engine) — tidak menghalangi gate. Siap lanjut ke **Step 10 (QA Testing)**.
+**Step 10 — QA Testing, gate LULUS.** 5 skenario (S-01 s/d S-05, AI-interaktif) menutup gap yang tercatat terbuka di Step 9: S-02 (cross-browser restore, direproduksi ulang dengan value berbeda), S-03 (fallback state awal), S-04 (negative — gagal silent tanpa notifikasi, kombinasi test Python + review kode), S-05 (cleanup logout — dipanggil langsung callback registry item, key modul terhapus bersih, key lain tidak tersentuh). Semua Pass, tidak ada loop-back ke Step 9. `human_qa/` (4 file) sudah digenerate untuk re-verifikasi manual kapan saja. Siap lanjut ke **Step 11 (UAT Sign-off)** — tool cuma generate checklist-nya, eksekusi selalu manual business user.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -121,7 +121,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
-| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
+| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
