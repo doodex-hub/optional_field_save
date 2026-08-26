@@ -100,7 +100,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-**Step 8 — Code Review, gate LULUS.** 0 issue 🔴/🟡, 4 info 🔵 (semua pre-existing/kosmetik, di luar scope). Gap Analysis vs spec & AC bersih — satu-satunya deviasi (MF-02 fix) sudah ditelusuri balik ke `03_MIGRATION_SPEC.md` §4 "Revisi Pasca-Tulis". Cek tabrakan nama method/field dengan core 18.0 (dua arah) — tidak ada. **Catatan penting untuk Step 9:** beberapa AC (AC-02-01/02/03-01/04-01) baru "Implemented + review statis", BELUM tour-tested browser — Step 9 wajib menutup ini. Siap lanjut ke **Step 9 (Dev Testing)**.
+**Step 9 — Dev Testing, gate LULUS.** Tour test browser nyata (Mode D, Docker+Chrome) ditulis dan dijalankan — sepanjang prosesnya ditemukan **MF-05**, bug KRITIS BARU (`session.partner_id`/`session.uid` dihapus total di 18.0, genuine version-diff, BUKAN bug lama) yang membuat mekanisme inti modul (load+simpan preferensi) rusak total. Diperbaiki (`user.partnerId` dari `@web/core/user`), diverifikasi ulang: G1 tetap `0 failed`, tour test `0 failed, 0 error(s) of 5 tests`, AC-02-02 (load dari DB pasca-reload tanpa local storage) diverifikasi tambahan via RPC manual. Detail lengkap: `FINDINGS.md` MF-05, `09_DEV_TESTING.md`. Dua gap kecil dicatat terbuka (AC-04-01 belum tour-tested, tour reload-end-to-end-otomatis flaky di Tour engine) — tidak menghalangi gate. Siap lanjut ke **Step 10 (QA Testing)**.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -120,7 +120,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (kode+G1+G2, termasuk fix MF-02) | — (disiplin per-fase A1→G2, lihat `06c_IMPLEMENTATION_LOG.md`) |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-24) |
-| 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
+| 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
 | 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
 

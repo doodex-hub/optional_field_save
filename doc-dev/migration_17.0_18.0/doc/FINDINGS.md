@@ -14,6 +14,7 @@
 | MF-02 | `this.orm` `undefined` di `webclient.js` — webclient CRASH TOTAL (blank page) setiap login, direproduksi identik di 17.0 ASLI maupun 18.0 | Step 2 (dugaan) → dikonfirmasi Step 6/G2 (2026-08-24) | `[DIWARISI-SOURCE]` — bug pre-existing, diperbaiki atas keputusan disengaja | **KRITIS** | **✅ RESOLVED (2026-08-24)** — fix ditambahkan, G1+G2 diverifikasi ulang |
 | MF-03 | F-10 (write `res.partner` gagal silent untuk user tanpa grup Contact Creation) — dipastikan tetap identik di 18.0 | Step 1 (backfill), dikonfirmasi ulang Step 2 | `[DIWARISI-SOURCE]` | Tinggi | Dikonfirmasi tetap sama — tidak perlu tindakan migrasi, WAJIB dipertahankan |
 | MF-04 | F-11 (`default={}` selalu jadi `False`) — dipastikan tetap identik di 18.0 | Step 1 (backfill), dikonfirmasi ulang Step 2 | `[DIWARISI-SOURCE]` | Sedang | Dikonfirmasi tetap sama — tidak perlu tindakan migrasi, WAJIB dipertahankan |
+| MF-05 | `session.partner_id`/`session.uid` **dihapus dari objek session di 18.0** (dipindah ke service `@web/core/user`, dikonfirmasi TIDAK ADA di 17.0 — genuine version-diff) — modul pakai `session.partner_id` di 2 tempat, keduanya jadi rusak | Step 9 (tour test) | `[GAP-MIGRASI]` | **KRITIS** | **✅ RESOLVED (2026-08-26)** — fix `user.partnerId` ditambahkan, diverifikasi end-to-end |
 
 ---
 
@@ -59,6 +60,31 @@
 - G1 diulang: tetap `0 failed, 0 error(s) of 4 tests` — fix tidak merusak apapun.
 - G2 diulang (browser nyata, tab baru supaya tidak kena cache): **TIDAK ADA lagi `TypeError`**, request `POST /web/dataset/call_kw/res.partner/search_read` (persis code path yang tadinya crash) sekarang **200 OK**. Sequence boot webclient (assets → load_menus → translations → search_read) normal, konsisten dua kali percobaan (initial load + reload).
 - **Catatan jujur soal cakupan verifikasi:** render visual penuh (`.o_navbar` dkk) tidak bisa dikonfirmasi 100% di tool browser sandbox sesi ini — tab yang dites `document.visibilityState` tetap `"hidden"` (browser pane tidak benar-benar ditampilkan/di-composite di sesi ini, dikonfirmasi juga oleh error terpisah "Browser pane is not displayed" saat mencoba screenshot), kemungkinan Owl/browser men-throttle render untuk tab yang tidak visible — ini keterbatasan environment tool, BUKAN gejala baru dari fix. Bukti network+console sudah cukup kuat untuk menyimpulkan bug INTI (crash `this.orm`) selesai, tapi **rekomendasi: dev cek sekali lagi manual di browser asli sendiri** (bukan cuma percaya laporan ini) sebagai konfirmasi akhir sebelum Step 8 ditutup, khususnya untuk lihat navbar/menu benar-benar render.
+- **⚠️ Koreksi penting (2026-08-26, Step 9):** `search_read` yang "200 OK" di atas TERNYATA tetap mengembalikan array KOSONG (bukan crash, tapi juga bukan data benar) — akar masalahnya `session.partner_id` sendiri sudah `undefined` (lihat **MF-05**, ditemukan belakangan lewat tour test Step 9). `webclient.js` punya guard `datapartnerId.length > 0 ? ... : {}` yang MENYEMBUNYIKAN kegagalan ini (tidak throw, tapi diam-diam dapat `{}`) — beda dari `setDatabase()` di `list_renderer.js` yang TIDAK punya guard serupa dan baru crash eksplisit saat dites lewat tour. Jadi MF-02 (fix `this.orm`) tetap valid dan perlu, tapi TIDAK CUKUP SENDIRIAN untuk membuat fitur load-dari-DB benar-benar berfungsi — MF-05 adalah bug KEDUA yang baru ketahuan setelah MF-02 diperbaiki dan pengujian dilanjutkan lebih dalam (tour test, bukan cuma buka webclient).
+
+### MF-05 — `session.partner_id`/`session.uid` dihapus dari objek `session` di 18.0 (genuine version-diff)
+**Ditemukan di:** Step 9 (2026-08-26), lewat tour test browser nyata (`static/tests/tours/optional_field_save_tour.js`)
+**Tag:** `[GAP-MIGRASI]` — genuinely perubahan API 18.0, WAJIB adaptasi kompatibilitas, BUKAN preserve-bug
+**Ref:** `webclient.js` (`getOptionalActiveFields`), `list_renderer.js` (`setDatabase`)
+**Lokasi:** Root cause di core: `odoo18/addons/web/static/src/core/user.js` baris 19-49 (`_makeUser(session)`) — komentar SUMBER ASLINYA eksplisit:
+```js
+// Delete user-related information from the session, s.t. there's a single source of truth
+delete session.home_action_id;
+delete session.is_admin;
+...
+delete session.partner_id;
+delete session.uid;
+...
+```
+**Deskripsi:** Sejak Odoo 18, field user-terkait (`partner_id`, `uid`, `name`, `username`, dll) DIHAPUS dari objek `session` (`@web/session`) begitu module `@web/core/user` pertama kali di-import — dipindah ke `user.partnerId`/`user.userId` (service baru, `@web/core/user`). Ini terjadi SANGAT AWAL (saat bundle JS pertama kali dievaluasi, sebelum komponen manapun `setup()`), jadi PRAKTIS `session.partner_id` SELALU `undefined` di 18.0 begitu webclient hidup — tidak ada window waktu di mana kode bisa membaca nilai lama. **Dikonfirmasi LANGSUNG tidak ada di 17.0** — dites empiris (`odoo:17.0` + `contacts`, browser nyata): `session.partner_id = 3` tetap ada dan stabil, tidak pernah dihapus.
+**Cara ditemukan:** Tour test (`optional_field_save_tour.js`) klik toggle kolom "Mobile" di Contacts list view → `setDatabase()` crash `TypeError: Cannot read properties of undefined (reading 'optional_field_save')` di `datapartnerId[0]` (karena `search_read([["id","=",undefined]], ...)` mengembalikan array kosong). Investigasi lewat `odoo.loader.modules.get("@web/session").session` di browser nyata mengonfirmasi `partner_id`/`uid` tidak ada di objek session yang live, padahal HTML mentah (`view-source`) MEMILIKI `"partner_id": 3` di script tag awal — membuktikan datanya dihapus SETELAH render awal, bukan tidak pernah dikirim server.
+**Dampak:** Mekanisme INTI modul (load preferensi dari DB saat webclient mount, DAN simpan preferensi saat toggle) **rusak total di 18.0** tanpa fix ini — `webclient.js` gagal senyap (guard `.length > 0`), `list_renderer.js` crash eksplisit (tidak ada guard serupa). Ini BUKAN kelanjutan MF-02 — MF-02 (this.orm) dan MF-05 (partner_id) adalah DUA bug independen yang KEBETULAN keduanya melibatkan `session`/service initialization; keduanya harus diperbaiki BERSAMA supaya fitur benar-benar berfungsi.
+**Rekomendasi/Fix:** Import `{ user } from "@web/core/user"`, ganti SEMUA pemakaian `session.partner_id` jadi `user.partnerId` di `webclient.js` dan `list_renderer.js`. TIDAK ADA perubahan behavior lain yang diperlukan — `user.partnerId` adalah padanan 1:1 nilai yang sama.
+**Verifikasi:**
+- G1 diulang setelah fix: tetap `0 failed, 0 error(s) of 4 tests`.
+- Tour test (langkah 1-7): toggle kolom → `POST .../res.partner/write → 200 OK` (sebelumnya crash sebelum sampai sini).
+- Verifikasi AC-02-02 end-to-end via RPC manual (mengingat keterbatasan render visual tool sandbox, lihat catatan MF-02): tulis preferensi ke DB via RPC → hapus SEMUA localStorage+sessionStorage → reload penuh (`/odoo`) → `sessionStorage.getItem("optional_field.res.partner")` **terisi otomatis `"mobile"`** dari DB round-trip. Ini membuktikan `webclient.js` (dengan fix MF-05) berhasil load dari DB murni via mekanisme yang benar, tanpa jejak local sama sekali.
+**Keputusan pemilik modul:** Diperbaiki langsung (analog MF-01 — genuine API relocation, bukan judgment call preserve-vs-fix) — dikonfirmasi berfungsi.
 
 ### MF-03 — F-10 dipastikan tetap identik di 18.0
 **Ditemukan di:** Step 1 (backfill, sebelum project ini), dikonfirmasi ulang Step 2 (2026-08-24)

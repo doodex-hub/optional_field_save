@@ -11,9 +11,12 @@ services:
       - db-data:/var/lib/postgresql/data
 
   odoo:
-    image: odoo:18.0
+    build:
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - db
+    shm_size: '2gb'
     environment:
       HOST: db
       USER: odoo
@@ -25,7 +28,7 @@ services:
       - ./logs:/var/log/odoo
     command: >
       odoo -d optional_field_save_18_test
-      -i optional_field_save
+      -i optional_field_save,contacts
       --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
       --test-enable
       --test-tags=/optional_field_save

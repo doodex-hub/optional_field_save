@@ -5,6 +5,7 @@ const { browser } = require("@web/core/browser/browser");
 const { registry } = require("@web/core/registry");
 const { useService } = require("@web/core/utils/hooks");
 const { session } = require("@web/session");
+const { user } = require("@web/core/user");
 const { ListRenderer } = require("@web/views/list/list_renderer");
 
 patch(ListRenderer.prototype, {
@@ -44,7 +45,10 @@ patch(ListRenderer.prototype, {
 
     async setDatabase(value1, value2) {
         try {
-            const partnerId = session.partner_id;
+            // MIGRATION 17.0->18.0 (MF-05, lihat FINDINGS.md): session.partner_id
+            // dihapus dari objek session di 18.0, padanan barunya user.partnerId
+            // (service @web/core/user).
+            const partnerId = user.partnerId;
             const datapartnerId = await this.orm.call("res.partner", "search_read", [[["id", "=", partnerId]], ["id", "name", "optional_field_save"]]);
             let old_value = {}
             old_value = datapartnerId[0].optional_field_save;

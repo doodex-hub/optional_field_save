@@ -122,12 +122,29 @@
 - **Risiko:** Sudah LOW setelah fix (perubahan 1 baris, scope sempit, diverifikasi eksekusi ulang) — sebelumnya CRITICAL
 - **Status:** ✅ Selesai — lihat `FINDINGS.md` MF-02 untuk detail lengkap
 
+## [Fase E, lanjutan — Step 9] Fix MF-05 — `session.partner_id` dihapus di 18.0
+
+- **Scope:** `static/src/js/webclient.js`, `static/src/js/list_renderer.js`
+- **Item spec (ref):** `FINDINGS.md` MF-05 (ditemukan lewat tour test Step 9, bukan review statis Step 2/3/8 — genuine gap analisis sebelumnya)
+- **Aksi:**
+  - `webclient.js`: tambah `const { user } = require("@web/core/user");`, ganti `const partnerId = session.partner_id;` jadi `const partnerId = user.partnerId;` di `getOptionalActiveFields()`.
+  - `list_renderer.js`: tambah import sama, ganti `const partnerId = session.partner_id;` jadi `const partnerId = user.partnerId;` di `setDatabase()`.
+  - `session` import TETAP dipertahankan di kedua file (masih dipakai untuk `this.session = session` di `setup()` masing-masing — bukan dead import).
+- **Secara eksplisit TIDAK dilakukan:**
+  - Tidak mengubah logic lain di kedua method — murni ganti sumber `partnerId`, behavior selebihnya identik
+  - Tidak menambah guard/try-catch baru untuk `datapartnerId[0]` di `setDatabase()` (CR-03 code review) — dengan `partnerId` yang benar, `search_read` akan selalu menemukan tepat 1 partner (user login), jadi guard tambahan tidak diperlukan untuk kondisi normal
+- **Risiko:** LOW setelah fix (perubahan 2 baris + 1 import per file, root cause API relocation yang jelas, diverifikasi eksekusi ulang G1 + tour test + RPC manual)
+- **Status:** ✅ Selesai, diverifikasi:
+  - G1 diulang: `0 failed, 0 error(s) of 4 tests`
+  - Tour test (`static/tests/tours/optional_field_save_tour.js`) ditulis + dijalankan: `0 failed, 0 error(s) of 5 tests` (4 Python + 1 tour), Mode D (Docker + `google-chrome-stable`)
+  - AC-02-02 (load dari DB setelah reload penuh, tanpa local storage sama sekali) diverifikasi manual via RPC (`fetch` langsung ke `/web/dataset/call_kw`) karena keterbatasan render visual tool browser sandbox sesi ini — `sessionStorage` terisi otomatis dari DB pasca-reload, terbukti bekerja
+
 ---
 
 ## Temuan di Luar Spec (kalau ada)
 
-- [x] Tidak ada — semua yang dikerjakan sudah tercakup `03_MIGRATION_SPEC.md`
+- [x] Tidak ada — MF-05 muncul dari eksekusi lebih dalam (tour test) terhadap area yang SUDAH tercakup `03_MIGRATION_SPEC.md`/`FINDINGS.md` MF-02 (sama-sama soal service initialization di `webclient.js`/`list_renderer.js`), bukan area baru di luar spec
 
 ## Kontribusi ke Knowledge Base
 
-- [x] Tidak ada temuan baru selain yang sudah dicatat di Step 2 (`migration-records/optional_field_save_17.0_18.0/SUMMARY.md`)
+- [x] Ada — dicatat ke `migration-records/optional_field_save_17.0_18.0/SUMMARY.md`: temuan `session.partner_id`/`session.uid` dihapus di 18.0 (pola generik, bukan spesifik modul ini — relevan untuk SEMUA modul yang baca field user-terkait langsung dari `session`)

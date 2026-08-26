@@ -26,6 +26,9 @@
             "optional_field_save/static/src/js/webclient.js",
             "optional_field_save/static/src/js/user_menu_items.js",
         ],
+        "web.assets_tests": [
+            "optional_field_save/static/tests/tours/optional_field_save_tour.js",
+        ],
     },
     'images': ['static/description/banner.png'],
 }
