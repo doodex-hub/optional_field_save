@@ -102,7 +102,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-✅ **Step 5 — Acceptance Criteria & Test Plan selesai (2026-08-26).** Step 1-4 lulus. `05a` (7 kelompok AC, AC-01 s/d AC-07) dan `05b` (test plan step 9/10/11) ditulis — sebagian besar AC bersifat regression check (mekanisme sudah tervalidasi migrasi 17→18), 1 AC baru murni infra (AC-07-01, `groups_id`→`group_ids`). **Lanjut ke Step 6 (Code Migration) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
+✅ **Step 6 — Code Migration selesai, G1+G2 lulus (2026-08-26).** Step 1-5 lulus. Perubahan kode: manifest version bump, `groups_id`→`group_ids` di test (MF-01), docker-env di-update ke `odoo:19.0`. G1 percobaan #1 menemukan finding BARU di luar spec (MF-02 — field "Mobile" dihapus total dari native Contacts list view 19.0, murni test infrastructure) — diperbaiki (tour pakai "Street"), diverifikasi G1 percobaan #3 (fresh DB): **`0 failed, 0 error(s) of 5 tests`, tour 7/7 "tour succeeded"**. G2 (validasi browser nyata) terpenuhi lewat tour test yang sama. **Lanjut ke Step 8 (Code Review) tanpa henti** — Step 7 N/A (port kode saja) — sesuai prinsip "JALAN TERUS di CLI".
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -115,7 +115,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai | — |
 | 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-26, self-verified) |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Selesai | — |
-| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
+| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai (kode+G1+G2, termasuk fix MF-02) | — |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
 | 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |

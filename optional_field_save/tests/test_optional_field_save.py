@@ -68,7 +68,7 @@ class TestOptionalFieldSave(TransactionCase):
             {
                 "name": "BACKFILL Test User Plain",
                 "login": "backfill_test_user_plain@example.com",
-                "groups_id": [(6, 0, [self.env.ref("base.group_user").id])],
+                "group_ids": [(6, 0, [self.env.ref("base.group_user").id])],
             }
         )
         partner_as_user = partner.with_user(test_user)
@@ -90,7 +90,7 @@ class TestOptionalFieldSave(TransactionCase):
             {
                 "name": "BACKFILL Test User Manager",
                 "login": "backfill_test_user_manager@example.com",
-                "groups_id": [
+                "group_ids": [
                     (
                         6,
                         0,

@@ -1,4 +1,4 @@
-name: optional_field_save_migration_18
+name: optional_field_save_migration_19
 
 services:
   db:
@@ -22,12 +22,12 @@ services:
       USER: odoo
       PASSWORD: odoo
     ports:
-      - "8090:8069"
+      - "8091:8069"
     volumes:
       - ../optional_field_save:/mnt/extra-addons/optional_field_save
       - ./logs:/var/log/odoo
     command: >
-      odoo -d optional_field_save_18_test
+      odoo -d optional_field_save_19_test
       -i optional_field_save,contacts
       --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
       --test-enable

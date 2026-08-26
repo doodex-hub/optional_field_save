@@ -14,6 +14,14 @@
 // in this same dev testing session - also documented in 09_DEV_TESTING.md / FINDINGS.md
 // MF-05. Hardening an automated reload scenario is left as follow-up work, not a gap in
 // whether the fix itself works.
+//
+// MIGRATION 18.0->19.0 (MF-02 of THIS migration - doc-dev/migration_18.0_19.0/doc/FINDINGS.md,
+// not to be confused with the "MF-02" mentioned below, which is the 17.0->18.0 migration's
+// finding about this.orm/webclient.js): the "Mobile" column used by this tour in 18.0 was
+// removed entirely from the native Contacts list view (base/views/res_partner_views.xml) in
+// 19.0 - it is not just hidden, the <field name="mobile"/> row itself is gone. Swapped to
+// "Street" (still optional="hide" in the 19.0 view) - a native view content change, not a
+// regression in this module's code.
 
 import { registry } from "@web/core/registry";
 
@@ -42,19 +50,19 @@ registry.category("web_tour.tours").add("optional_field_save_tour", {
             run: "click",
         },
         {
-            trigger: '.dropdown-item:contains("Mobile")',
-            content: "Toggle the Mobile optional column ON",
+            trigger: '.dropdown-item:contains("Street")',
+            content: "Toggle the Street optional column ON",
             run: "click",
         },
         {
-            trigger: "th[data-name='mobile']",
+            trigger: "th[data-name='street']",
             content:
-                "Assert the Mobile column is now visible in the table header - this proves " +
+                "Assert the Street column is now visible in the table header - this proves " +
                 "computeOptionalActiveFields() (MF-01 rewrite) correctly reflects the " +
                 "toggle.",
         },
         {
-            trigger: "th[data-name='mobile']",
+            trigger: "th[data-name='street']",
             content:
                 "Wait for setDatabase() to actually finish persisting to res.partner (poll " +
                 "the sessionStorage key it sets AFTER a successful write - see " +
@@ -70,10 +78,10 @@ registry.category("web_tour.tours").add("optional_field_save_tour", {
                     }
                     await new Promise((resolve) => setTimeout(resolve, 200));
                 }
-                if (!value || !value.includes("mobile")) {
+                if (!value || !value.includes("street")) {
                     throw new Error(
                         `Expected sessionStorage "optional_field.res.partner" to contain ` +
-                        `"mobile" after toggling the column, got: ${value}`
+                        `"street" after toggling the column, got: ${value}`
                     );
                 }
             },

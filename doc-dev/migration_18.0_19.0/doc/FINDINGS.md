@@ -23,7 +23,8 @@ Warisan penting dari migrasi 17→18 (`doc-dev/_archive/migration_17.0_18.0/doc/
 
 | ID | Judul | Ditemukan di Step | Tag | Prioritas | Status |
 |---|---|---|---|---|---|
-| MF-01 | `res.users.groups_id` di-rename `group_ids` di 19.0 — 2 baris test fixture jadi invalid | Step 2 | `[GAP-MIGRASI]` | Sedang | Terbuka — jadi input wajib `03_MIGRATION_SPEC.md`/step 6 |
+| MF-01 | `res.users.groups_id` di-rename `group_ids` di 19.0 — 2 baris test fixture jadi invalid | Step 2 | `[GAP-MIGRASI]` | Sedang | **✅ RESOLVED (2026-08-26)** — fix diterapkan step 6, G1 konfirmasi 4/4 test Python PASS |
+| MF-02 | Kolom "Mobile" DIHAPUS TOTAL dari native Contacts list view di 19.0 — tour test hardcode "Mobile" gagal TIMEOUT | Step 6 (G1, eksekusi nyata) | `[GAP-MIGRASI]` | Sedang | **✅ RESOLVED (2026-08-26)** — tour diubah pakai kolom "Street" (masih ada), G1 rerun dijadwalkan |
 
 ---
 
@@ -38,6 +39,18 @@ Warisan penting dari migrasi 17→18 (`doc-dev/_archive/migration_17.0_18.0/doc/
 **Dampak:** `create()` dengan field name yang tidak dikenal ORM melempar `ValueError` — kedua test akan ERROR (bukan silent, bukan assertion failure) sebelum sempat menguji logic ACL yang jadi tujuan test. Tidak berdampak ke kode modul produksi (`models/`, `static/src/js/`) — murni test infrastructure.
 **Rekomendasi:** Rename `"groups_id"` → `"group_ids"` di kedua lokasi (step 6, Fase B/G — Python test file). Tidak ada perubahan business logic, tidak perlu keputusan judgment — analog MF-01 migrasi 17→18 (genuine API rename, port apa adanya ke nama baru).
 **Keputusan pemilik modul:** *(kosong — diisi manusia, atau dikonfirmasi di gate Step 4)*
+**Status:** ✅ RESOLVED (2026-08-26) — `groups_id`→`group_ids` diterapkan di `tests/test_optional_field_save.py:71,93` (Fase G1-prasyarat, `06c_IMPLEMENTATION_LOG.md`). G1 percobaan #1 (`docker compose up`, `odoo:19.0`) mengonfirmasi 4/4 test Python `TestOptionalFieldSave` PASS — termasuk `test_plain_internal_user_cannot_write_own_partner_field`/`test_user_with_partner_manager_group_can_write` yang bergantung fixture ini.
+
+### MF-02 — Kolom "Mobile" dihapus total dari native Contacts list view di 19.0 — tour test hardcode "Mobile" TIMEOUT
+**Ditemukan di:** Step 6, G1 percobaan #1 (`docker compose up`, eksekusi nyata), 2026-08-26 — BUKAN ditemukan dari review statis step 2 (selector CSS `.o_optional_columns_dropdown_toggle` sudah dicek stabil di DIFF-10, tapi isi KONTEN dropdown — field mana saja yang optional — tidak ikut diperiksa statis)
+**Tag:** `[GAP-MIGRASI]` — genuinely perubahan konten view native 19.0, WAJIB adaptasi test infrastructure, BUKAN business logic
+**Ref:** `DIFF-10` (`02_diff/02_DIFF_ANALYSIS.md`, selector CSS dropdown — masih valid, cuma isinya yang berubah)
+**Lokasi:** `optional_field_save/static/tests/tours/optional_field_save_tour.js` (step "Toggle the Mobile optional column ON", trigger `.dropdown-item:contains("Mobile")`)
+**Deskripsi:** Tour test G1 percobaan #1 GAGAL di step [5/7] — `TIMEOUT step failed to complete within 10000 ms`, `Element (.dropdown-item:contains("Mobile")) has not been found`. Investigasi: `enterprise19.0/odoo/addons/base/views/res_partner_views.xml` (list view Contacts) **tidak lagi punya baris `<field name="mobile" .../>` sama sekali** — dikonfirmasi dibandingkan langsung `odoo18/odoo/addons/base/views/res_partner_views.xml:62` (`<field name="mobile" optional="hide"/>`, ADA di 18.0) vs `enterprise19.0` (TIDAK ADA di file yang sama, dicek juga di seluruh `contacts/views/`). Ini bukan cuma disembunyikan (`optional="hide"` → masih bisa di-toggle tampil) — barisnya dihapus total dari view.
+**Dampak:** Modul produksi (`list_renderer.js`, `webclient.js`, dst) **TIDAK terpengaruh** — mekanisme "optional column" itu sendiri tetap berfungsi untuk field APAPUN yang memang ada di view (dikonfirmasi 4 test Python tetap PASS). Dampak murni ke test infrastructure yang secara spesifik memilih "Mobile" sebagai contoh field untuk dites — pilihan itu sekarang invalid di 19.0.
+**Rekomendasi/Fix:** Ganti field contoh di tour ke field yang MASIH `optional="hide"` di 19.0 Contacts list view — dipilih `street` (dikonfirmasi ada, `optional="hide"`, tidak butuh grup khusus seperti `company_id`/`user_id`). Update 3 titik: trigger dropdown-item, assertion `th[data-name]`, dan assertion isi `sessionStorage` (dulu cek substring `"mobile"`, sekarang `"street"`).
+**Verifikasi:** G1 percobaan #2 dijadwalkan setelah fix ini untuk konfirmasi tour lulus penuh (7/7 step) — lihat `06c_IMPLEMENTATION_LOG.md` "Riwayat Percobaan G1".
+**Kontribusi knowledge base:** dicatat sebagai kandidat general di `migration-tool/migration-records/optional_field_save_18.0_19.0/SUMMARY.md` (CAND-02) — perubahan ini genuinely general (view native, bukan spesifik modul ini), modul migrasi 18→19 LAIN manapun yang test tour terhadap kolom "Mobile" di Contacts list view (pola umum) akan kena masalah yang sama.
 
 ---
 
