@@ -102,7 +102,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 
 ## Status saat ini
 
-✅ **Step 3 — Migration Spec selesai (2026-08-26).** Step 1-2 lulus. Migrasi ini sangat sempit: SEMUA API `web` addon yang dipakai modul (`computeOptionalActiveFields`, `saveOptionalActiveFields`, `user.partnerId`, `useService("orm")`) dikonfirmasi stabil 18.0→19.0 — nol perubahan kode produksi diperlukan. Hanya 2 perubahan mekanis: bump manifest version, rename `groups_id`→`group_ids` di 2 baris test (MF-01). **Lanjut ke Step 4 (Spec Completeness Review) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
+✔️ **Step 4 — Spec Completeness Review lulus gate (2026-08-26, self-verified, dilaporkan ke user).** Step 1-3 lulus. Migrasi ini sangat sempit: SEMUA API `web` addon yang dipakai modul dikonfirmasi stabil 18.0→19.0 — nol perubahan kode produksi diperlukan. Hanya 2 perubahan mekanis: bump manifest version, rename `groups_id`→`group_ids` di 2 baris test (MF-01). Step 4: semua 23 file modul dikonfirmasi tercakup `03_MIGRATION_SPEC.md`, 1 gap minor ditemukan+ditutup di tempat (DIFF-11, `test_optional_field_save_tour.py`). **Lanjut ke Step 5 (Acceptance Criteria & Test Plan) tanpa henti** sesuai prinsip "JALAN TERUS di CLI".
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -113,7 +113,7 @@ Cross-cutting: `PROMPT_LOG.md` dan `FINDINGS.md` di root `doc/` — update tiap 
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✅ Selesai | ✔️ Lulus (2026-08-26) |
 | 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Selesai | Tidak ada gate formal — 1 finding baru (MF-01) di `FINDINGS.md` |
 | 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai | — |
-| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
+| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-08-26, self-verified) |
 | 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
 | 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
 | 7 | Data Migration Scripts | — | — (n/a, port kode saja) | — |
