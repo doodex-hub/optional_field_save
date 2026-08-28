@@ -58,7 +58,7 @@ Provides an interface for managing saved options, including updates, deletions, 
 Once installed, this feature allows you to save and restore a list of selected options within the user interface. Use this feature to manage and access options that have been saved across multiple sessions or browsers. Using the intuitive interface, you can easily update, delete, and add options as needed..
 
 ## Compatibility
-Odoo version: 17.0
+Odoo version: 19.0
 
 ## License
 This module is licensed under [LGPLv3 licensed](./LICENSE)
