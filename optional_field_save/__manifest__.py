@@ -27,6 +27,9 @@
             "optional_field_save/static/src/js/user_menu_items.js",
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': [
+       'static/description/banner.gif',
+       'static/description/icon.png',
+    ],
 
 }
