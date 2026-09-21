@@ -48,7 +48,6 @@
                                       "Bash(tr:*)",
                                       "Bash(wc:*)",
                                       "Edit(**)",
-                                      "Edit(//{{ABS_PATH_MIGRATION_TOOL}}/migration-records/**)",
                                       "Edit(//D:/Kuncoro/doodex/repo/migration-tool-project/migration-tool/migration-records/**)"
                                   ],
                         "deny":  [
@@ -59,21 +58,10 @@
                                      "Bash(git push:*)",
                                      "Bash(git rebase:*)",
                                      "Bash(git reset --hard:*)",
-                                     "Edit(//{{ABS_PATH_MIGRATION_TOOL}}/knowledge/**)",
-                                     "Edit(//{{ABS_PATH_MIGRATION_TOOL}}/templates/**)",
-                                     "Edit(//{{ABS_PATH_NATIVE_SOURCE_ENTERPRISE}}/**)",
-                                     "Edit(//{{ABS_PATH_NATIVE_SOURCE}}/**)",
-                                     "Edit(//{{ABS_PATH_NATIVE_TARGET_ENTERPRISE}}/**)",
-                                     "Edit(//{{ABS_PATH_NATIVE_TARGET}}/**)",
-                                     "Edit(//{{ABS_PATH_SOURCE_CODEBASE}}/**)",
-                                     "Edit(//{{ABS_PATH_THIRD_PARTY_SOURCE}}/**)",
-                                     "Edit(//{{ABS_PATH_THIRD_PARTY_TARGET}}/**)",
-                                     "Edit(//D:/Kuncoro/doodex/repo/enterprise18/**)",
-                                     "Edit(//D:/Kuncoro/doodex/repo/enterprise19.0/**)",
+                                     "Edit(//D:/Kuncoro/doodex/repo/enterprise20/**)",
                                      "Edit(//D:/Kuncoro/doodex/repo/migration-tool-project/migration-tool/knowledge/**)",
                                      "Edit(//D:/Kuncoro/doodex/repo/migration-tool-project/migration-tool/templates/**)",
-                                     "Edit(//D:/Kuncoro/doodex/repo/odoo18/**)",
-                                     "Edit(//D:/Kuncoro/doodex/repo/optional-field-save-migration-18/**)"
+                                     "Edit(//D:/Kuncoro/doodex/repo/odoo20/**)"
                                  ]
                     },
     "hooks":  {
