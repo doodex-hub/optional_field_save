@@ -82,6 +82,50 @@ class TestOptionalFieldSave(TransactionCase):
                 {"optional_field_save": {"optional_field.res.partner": "email"}}
             )
 
+    def test_plain_internal_user_can_write_own_partner_record(self):
+        """Baru ditambahkan step 8 (code review), migrasi 19.0->20.0 — lihat FINDINGS.md MF-01.
+
+        `test_plain_internal_user_cannot_write_own_partner_field` di atas (warisan 17.0, docstring-nya
+        mengklaim menguji write ke partner user SENDIRI) TERNYATA menulis ke partner LAIN yang baru
+        dibuat (`BACKFILL Test Partner ACL Plain`) - BUKAN `test_user.partner_id` miliknya sendiri.
+        Ini tidak masalah di 17.0/18.0/19.0 (ACL menolak write ke *SEMUA* res.partner untuk group_user
+        biasa, jadi target partner mana pun tidak relevan) - TAPI jadi gap nyata di 20.0: `ir.access.csv`
+        20.0 menambah baris `res_partner_rule_write_self` (grup `base.group_user`, domain
+        `id = user.partner_id.id`) - permission row BERSYARAT pada partner MANA yang ditulis. Modul ini
+        (`setDatabase()`, `list_renderer.js`) selalu menulis ke `partnerId = user.partnerId` - PERSIS
+        partner user login sendiri - jadi skenario yang genuinely relevan untuk BSL-010 adalah SELF-write,
+        bukan write ke partner tak terkait.
+
+        Test ini menutup gap itu dengan menulis ke `test_user.partner_id` itu sendiri, mereplikasi
+        pola JS asli persis. **Hasil eksekusi nyata (2026-09-21): AccessError TIDAK dilempar — write
+        BERHASIL.** Nama/assertion test ini SUDAH DIREVISI dari asumsi awal ("cannot write") ke hasil
+        aktual ("can write") — persis pola revisi T-05 di atas. **Kesimpulan: BSL-010/F-10/MF-03 TIDAK
+        LAGI terjadi untuk skenario nyata (self-write) di 20.0** — bug silent-fail warisan yang
+        seharusnya dipertahankan "apa adanya" ternyata HILANG akibat perubahan ACL native `base`
+        (`res_partner_rule_write_self`), bukan karena kode modul diubah. Lihat FINDINGS.md MF-01 untuk
+        keputusan lengkap dan `01b_BASELINE_SPEC.md` BSL-010 untuk status final.
+        """
+        test_user = self.env["res.users"].create(
+            {
+                "name": "BACKFILL Test User Plain Self-Write",
+                "login": "backfill_test_user_plain_self@example.com",
+                "group_ids": [(6, 0, [self.env.ref("base.group_user").id])],
+            }
+        )
+        own_partner_as_user = test_user.partner_id.with_user(test_user)
+        own_partner_as_user.write(
+            {"optional_field_save": {"optional_field.res.partner": "email"}}
+        )
+        test_user.partner_id.invalidate_recordset(["optional_field_save"])
+        self.assertEqual(
+            test_user.partner_id.optional_field_save,
+            {"optional_field.res.partner": "email"},
+            "TERBUKTI (2026-09-21): base.group_user BIASA (tanpa Contact Creation) SEKARANG BISA "
+            "write res.partner MILIKNYA SENDIRI di 20.0 — beda dari 17.0/18.0/19.0. Akibat baris "
+            "baru res_partner_rule_write_self di ir.access.csv (native base, bukan modul ini). "
+            "Lihat FINDINGS.md MF-01.",
+        )
+
     def test_user_with_partner_manager_group_can_write(self):
         """Pelengkap T-05 — batas atas: user DENGAN group_partner_manager ('Contact Creation')
         BISA write, membuktikan F-10 murni soal grup yang kurang, bukan bug lain."""

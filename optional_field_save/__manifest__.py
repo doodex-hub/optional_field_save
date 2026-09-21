@@ -14,7 +14,7 @@
     "website": "https://www.doodex.net/",
     "category": "Tools",
     "license": "AGPL-3",
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "depends": [
         "base",
         "web",
@@ -28,6 +28,7 @@
         ],
         "web.assets_tests": [
             "optional_field_save/static/tests/tours/optional_field_save_tour.js",
+            "optional_field_save/static/tests/tours/optional_field_save_logout_tour.js",
         ],
     },
     'images': ['static/description/banner.png'],

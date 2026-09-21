@@ -54,7 +54,7 @@ Fournit une interface de gestion des options enregistrées, y compris les mises 
 
 
 ##Compatibilité
-Version d'Odoo : 16.0
+Version d'Odoo : 20.0
 
 #Licence
 Ce module est sous licence [LGPLv3 licensed](./LICENSE)

@@ -116,9 +116,55 @@ Skill-skill ini TIDAK menggantikan urutan/gate 11-step di atas, dan TIDAK berisi
 
 ## Status saat ini
 
-✅ **Step 1 (Intake & Baseline Spec) selesai, gate lulus (2026-09-21).** Branch `migration/20.0` dibuat dari `migration/19.0`. Kode modul dikonfirmasi byte-identik antara `migration/18.0` dan `migration/19.0` (`git diff`, lihat `01b_BASELINE_SPEC.md` §0) — baseline behavior diwarisi 1:1 dari migrasi 18→19 dengan confidence tinggi. Dev mengonfirmasi: sifat migrasi = port kode saja, source dibekukan, `native-source`/`native-source-enterprise` 19.0 tidak perlu di-connect terpisah, tidak ada dependency third-party/OCA (diverifikasi dari manifest+kode). **Lanjut ke Step 2 (Diff & Compatibility Analysis).**
+✅ **Step 1-10 selesai, semua gate lulus PENUH (2026-09-21, setelah 2 koreksi signifikan — lihat di
+bawah). Step 11 (UAT) — skrip sudah digenerate, MENUNGGU sign-off manusia** (bukan tugas AI, lihat
+`11_UAT_CHECKLIST.md`). Modul kecil, port-kode berjalan lancar — 2 perubahan kode wajib: hapus dead
+import `logOutItem` (DIFF-02) DAN ganti navigasi logout dari GET jadi POST+redirect (DIFF-08, KRITIS,
+lihat di bawah) + version bump manifest.
 
-> **Belum selesai — perlu aksi manual dev:** `.claude/settings.json` masih berisi placeholder/path basi dari migrasi 18→19 (Edit ditolak classifier "Self-Modification"). Lihat instruksi PowerShell di ringkasan chat sesi ini.
+**🔴 Temuan paling signifikan (MF-05, DIFF-08) — LOGOUT SEMPAT RUSAK TOTAL DI 20.0:** klik "Log out"
+menghasilkan `405 Method Not Allowed` — `/web/session/logout` di native 20.0 menolak GET (native
+sudah pindah ke POST+redirect untuk hardening CSRF), sementara modul ini masih navigasi GET (pola
+warisan sejak 17.0). **TIDAK ADA test/analisis/code-review manapun (step 2/3/8) yang menangkap ini —
+hanya ketemu lewat verifikasi VISUAL/LIVE manual** yang dipaksa oleh dev setelah menegur gate step 10
+yang lolos tanpa bukti nyata (lihat MF-04 di bawah). Fix diterapkan, dikonfirmasi 2x live + tour test
+permanen baru (`optional_field_save_logout_tour`) ditambahkan supaya regresi ini tidak lolos lagi.
+
+**Temuan kedua (MF-01):** ACL `res.partner` untuk `base.group_user` (staf biasa tanpa "Contact
+Creation") BERUBAH di 20.0 — self-write (menyimpan preferensi kolomnya SENDIRI) yang dulu gagal SENYAP
+(F-10/MF-03, bug warisan sejak 17.0) SEKARANG BERHASIL, akibat ACL native `base` yang berubah
+(`ir.access.csv`), BUKAN karena kode modul diubah. Dikonfirmasi empiris 3x independen setelah
+verifikasi putaran pertama sempat salah simpul (test warisan menyasar partner yang salah).
+
+**Proses (MF-04) — pelajaran paling penting sesi ini:** gate step 10 SEMPAT menandai skenario logout
+"Pass" berdasarkan Desk Review saja (tanpa eksekusi visual/live sama sekali) — ditegur langsung dev
+("kenapa lolos jika belum ada test visual/live?"). Setelah dipaksa eksekusi nyata, MF-05 di atas
+ketahuan. **Insistensi dev untuk tidak menerima "Pass" tanpa bukti live TERBUKTI BENAR dan menemukan
+bug produksi nyata** yang tidak akan pernah ketemu lewat metode statis manapun.
+
+**Blocker infrastruktur yang muncul & diselesaikan (2x):**
+1. Docker Hub belum punya image resmi `odoo:20.0` (masih pre-release) — `docker-env/` di-rewrite
+   build-from-source dari `native-target` (`odoo20`), dikonfirmasi lewat `AskUserQuestion`.
+2. Server QA sempat tidak reachable sama sekali (dari browser MAUPUN `curl` host) — root cause:
+   Odoo bind ke `127.0.0.1` di dalam container (default), tidak bisa dijangkau lewat port-forward
+   Docker. Awalnya SALAH diduga sebagai "limitasi sandbox browser" — dikoreksi setelah `curl` dari
+   host JUGA gagal. Fix: `--http-interface=0.0.0.0`.
+
+Detail lengkap kronologi (2 putaran verifikasi MF-01, kesalahan-lalu-koreksi MF-04, penemuan MF-05):
+`FINDINGS.md`. Kandidat perbaikan tool (general, lintas-project) dicatat di
+`migration-tool/migration-records/optional_field_save_19.0_20.0/SUMMARY.md` — termasuk temuan
+`version-diff` prioritas TINGGI soal `/web/session/logout` yang relevan untuk modul CUSTOM APAPUN
+yang override logout, tidak cuma modul ini.
+
+**Cross-Version Compare (dijalankan PENUH atas permintaan eksplisit dev, meski tidak masuk kriteria
+wajib):** `CROSS_VERSION_COMPARE.md` — 2 instance live bersamaan (19.0 official image + 20.0
+build-from-source). Static-diff bersih (konfirmasi ulang: klaim "file X tidak diubah" di
+`06c_IMPLEMENTATION_LOG.md` genuinely benar byte-for-byte, bukan asumsi). Live A/B mengonfirmasi
+ULANG MF-05 secara independen (19.0 logout bersih vs 20.0 405-sebelum-fix). 1 finding baru murni
+kosmetik native (`RMV-01`, opsi kolom "Created on"), **0 regresi baru ditemukan** — memperkuat
+confidence migrasi sudah genuinely lengkap.
+
+> **Masih belum selesai — perlu aksi manual dev:** `.claude/settings.json` masih berisi placeholder/path basi dari migrasi 18→19 (Edit ditolak classifier "Self-Modification"). Lihat instruksi PowerShell di ringkasan chat sesi Step 1.
 
 > AI: update bagian ini sendiri di akhir tiap sesi kerja.
 
@@ -127,16 +173,16 @@ Skill-skill ini TIDAK menggantikan urutan/gate 11-step di atas, dan TIDAK berisi
 | # | Step | Dokumen | Status | Gate |
 |---|---|---|---|---|
 | 1 | Intake & Scope | `01a_MIGRATION_INTAKE.md`, `01b_BASELINE_SPEC.md` | ✅ Selesai | ✔️ Lulus (2026-09-21) |
-| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ⬜ Belum mulai | — |
-| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ⬜ Belum mulai | — |
-| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ⬜ Belum mulai | — |
-| 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ⬜ Belum mulai | — |
-| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ⬜ Belum mulai | — |
-| 7 | Data Migration Scripts | — | — (n/a, port kode saja — kondisional) | — |
-| 8 | Code Review | `08_CODE_REVIEW.md` | ⬜ Belum mulai | — |
-| 9 | Dev Testing | `09_DEV_TESTING.md` | ⬜ Belum mulai | — |
-| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ⬜ Belum mulai | — |
-| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ⬜ Belum mulai | — |
+| 2 | Diff & Compatibility Analysis | `02_DIFF_ANALYSIS.md` | ✅ Selesai | — (tidak ada gate) |
+| 3 | Migration Spec (teknis) | `03_MIGRATION_SPEC.md` | ✅ Selesai | — (tidak ada gate) |
+| 4 | Spec Completeness Review | `04_SPEC_COMPLETENESS_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-09-21) |
+| 5 | Acceptance Criteria & Test Plan | `05a_MIGRATION_ACCEPTANCE_CRITERIA.md`, `05b_TEST_PLAN_MIGRATION.md` | ✅ Selesai | — (tidak ada gate) |
+| 6 | Code Migration | kode `target-codebase` + `06c_IMPLEMENTATION_LOG.md` | ✅ Selesai | — (disiplin per-fase, semua fase ✅) |
+| 7 | Data Migration Scripts | — | — (N/A, port kode saja — dikonfirmasi) | — |
+| 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-09-21) |
+| 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-09-21) — 9/9 test pass (termasuk tour logout baru, ditambahkan setelah MF-05 ditemukan) |
+| 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✅ Selesai | ✔️ **Lulus PENUH** (2026-09-21, setelah 1 bug kritis ditemukan & difix — lihat MF-05) — 6/6 skenario `[DIKONFIRMASI]` via eksekusi nyata |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Skrip digenerate | ⬜ Menunggu sign-off manusia |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
 
