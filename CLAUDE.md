@@ -116,11 +116,13 @@ Skill-skill ini TIDAK menggantikan urutan/gate 11-step di atas, dan TIDAK berisi
 
 ## Status saat ini
 
-✅ **Step 1-10 selesai, semua gate lulus PENUH (2026-09-21, setelah 2 koreksi signifikan — lihat di
-bawah). Step 11 (UAT) — skrip sudah digenerate, MENUNGGU sign-off manusia** (bukan tugas AI, lihat
-`11_UAT_CHECKLIST.md`). Modul kecil, port-kode berjalan lancar — 2 perubahan kode wajib: hapus dead
-import `logOutItem` (DIFF-02) DAN ganti navigasi logout dari GET jadi POST+redirect (DIFF-08, KRITIS,
-lihat di bawah) + version bump manifest.
+✅✅ **MIGRASI DITUTUP (2026-09-21).** Semua 11 step selesai, semua gate lulus PENUH. Step 11 (UAT)
+sign-off diberikan oleh pemilik modul (Kuncoro) — "UAT dianggap selesai, percaya pada AI-test" (pola
+sama seperti migrasi 18→19), BUKAN eksekusi tangan sendiri, dicatat jujur apa adanya di
+`11_UAT_CHECKLIST.md` §Sign-off. `MIGRATION_CLOSED.md` sudah ditulis, commit penutup
+`7315b17f75d93f5ad269d1d9aac7c5dee13477fb`. Modul kecil, port-kode berjalan lancar — 2 perubahan kode
+wajib: hapus dead import `logOutItem` (DIFF-02) DAN ganti navigasi logout dari GET jadi POST+redirect
+(DIFF-08, KRITIS, lihat di bawah) + version bump manifest.
 
 **🔴 Temuan paling signifikan (MF-05, DIFF-08) — LOGOUT SEMPAT RUSAK TOTAL DI 20.0:** klik "Log out"
 menghasilkan `405 Method Not Allowed` — `/web/session/logout` di native 20.0 menolak GET (native
@@ -182,7 +184,7 @@ confidence migrasi sudah genuinely lengkap.
 | 8 | Code Review | `08_CODE_REVIEW.md` | ✅ Selesai | ✔️ Lulus (2026-09-21) |
 | 9 | Dev Testing | `09_DEV_TESTING.md` | ✅ Selesai | ✔️ Lulus (2026-09-21) — 9/9 test pass (termasuk tour logout baru, ditambahkan setelah MF-05 ditemukan) |
 | 10 | QA Testing | `10_BUSINESS_FLOW_MIGRATION.md` | ✅ Selesai | ✔️ **Lulus PENUH** (2026-09-21, setelah 1 bug kritis ditemukan & difix — lihat MF-05) — 6/6 skenario `[DIKONFIRMASI]` via eksekusi nyata |
-| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Skrip digenerate | ⬜ Menunggu sign-off manusia |
+| 11 | UAT Sign-off | `11_UAT_CHECKLIST.md` | ✅ Selesai | ✔️ **Sign-off diberikan (2026-09-21)** — atas dasar percaya AI-test, dicatat jujur bukan eksekusi tangan sendiri. `MIGRATION_CLOSED.md` ditulis |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Draft/selesai ditulis · ✔️ Disetujui/lulus gate.
 
