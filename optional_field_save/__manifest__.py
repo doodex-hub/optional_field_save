@@ -31,5 +31,8 @@
             "optional_field_save/static/tests/tours/optional_field_save_logout_tour.js",
         ],
     },
-    'images': ['static/description/banner.png'],
+    'images': [
+        'static/description/banner.png',
+        'static/description/icon.png',
+    ],
 }
