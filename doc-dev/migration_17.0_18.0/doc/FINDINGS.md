@@ -2,7 +2,7 @@
 
 **Modul:** optional_field_save
 **Migrasi:** 17.0 → 18.0
-**Terakhir update:** 2026-08-24
+**Terakhir update:** 2026-10-05
 
 ---
 
@@ -15,6 +15,7 @@
 | MF-03 | F-10 (write `res.partner` gagal silent untuk user tanpa grup Contact Creation) — dipastikan tetap identik di 18.0 | Step 1 (backfill), dikonfirmasi ulang Step 2 | `[DIWARISI-SOURCE]` | Tinggi | Dikonfirmasi tetap sama — tidak perlu tindakan migrasi, WAJIB dipertahankan |
 | MF-04 | F-11 (`default={}` selalu jadi `False`) — dipastikan tetap identik di 18.0 | Step 1 (backfill), dikonfirmasi ulang Step 2 | `[DIWARISI-SOURCE]` | Sedang | Dikonfirmasi tetap sama — tidak perlu tindakan migrasi, WAJIB dipertahankan |
 | MF-05 | `session.partner_id`/`session.uid` **dihapus dari objek session di 18.0** (dipindah ke service `@web/core/user`, dikonfirmasi TIDAK ADA di 17.0 — genuine version-diff) — modul pakai `session.partner_id` di 2 tempat, keduanya jadi rusak | Step 9 (tour test) | `[GAP-MIGRASI]` | **KRITIS** | **✅ RESOLVED (2026-08-26)** — fix `user.partnerId` ditambahkan, diverifikasi end-to-end |
+| MF-06 | [POST-RILIS] Pilihan kolom tercampur antar list view, toggle telat satu klik, race muat preferensi — diperbaiki di rilis 18.0.1.0.1 | Review pasca-rilis (di luar 11 step, sesi 2026-10-05) | `[POST-RILIS]` | Sedang | **CLOSED (2026-10-05)** — dirilis 18.0.1.0.1 |
 
 ---
 
@@ -103,3 +104,21 @@ delete session.uid;
 **Deskripsi:** `default={}` tidak pernah menghasilkan `{}` persisten karena perilaku field Json core, bukan bug modul — dan perilaku ini tidak berubah 17.0→18.0.
 **Dampak:** Tidak ada tindakan migrasi yang diperlukan.
 **Keputusan pemilik modul:** Dipertahankan apa adanya (default) — belum ada permintaan eksplisit untuk mengubah.
+
+### MF-06 — [POST-RILIS] Pilihan kolom tercampur antar list view, toggle telat satu klik, race muat preferensi — diperbaiki di rilis 18.0.1.0.1
+**Ditemukan di:** Review pasca-rilis, di luar 11 step migrasi (2026-10-05). Reproduksi di Docker (Odoo 18.0, 19.0, 20.0 berjalan bersamaan, browser Playwright).
+**Tag:** `[POST-RILIS]`
+**Sifat perubahan:** perubahan kode DISENGAJA atas persetujuan pemilik modul, DI LUAR migrasi (kode migrasi sebelumnya sengaja dijaga identik dengan versi sumber). `01b_BASELINE_SPEC.md` lama masih menggambarkan perilaku sebelum perbaikan (key penyimpanan per model).
+**Cakupan:** 18.0, 19.0, 20.0 (kode `static/src/js` identik di tiga versi). 16.0 dan 17.0 di luar lingkup.
+
+| Masalah | Lokasi | Status sebelum (terbukti di Docker) | Perbaikan |
+|---|---|---|---|
+| Pilihan kolom tercampur antar list view dari model yang sama | `list_renderer.js`: key memakai `keyOptionalFields.split(",")[1]` (hanya nama model) | Ubah satu kolom di list Contacts membuat view lain dari `res.partner` kehilangan kolom default-nya (view uji: tinggal `Name` atau `Name`+`City`) | Key = key view native lengkap: `optional_field.<model>,list,<viewId>,<fields>` (`getOptionalFieldStorageKey()`) |
+| Toggle kolom telat satu klik (ditemukan agen reviewer, lalu direproduksi) | `list_renderer.js`: `computeOptionalActiveFields` membaca sessionStorage lama, baru diperbarui setelah RPC `setDatabase` | Setelah DB berisi preferensi, klik kolom tidak mengubah tampilan sampai klik berikutnya. Tour lama tidak menangkapnya (hanya uji toggle pertama) | `saveOptionalActiveFields` menulis sessionStorage sinkron sebelum RPC |
+| Race muat preferensi vs render pertama | `webclient.js`: `getOptionalActiveFields()` dipanggil tanpa `await` di `setup()` | Normal: tidak terlihat. Dengan RPC baca preferensi ditunda 3 detik: list tampil dengan default dan tidak dikoreksi | `onWillStart` menunggu `getOptionalActiveFields()`; error di-log, tidak fatal |
+
+**Hasil uji sesudah perbaikan (Docker, 18.0):** view kedua tetap menampilkan `Website Link` dan `City` setelah kolom di Contacts diubah; tiga toggle beruntun cocok dengan checkbox; dengan server lambat 3 detik render pertama sama dengan hasil normal; pilihan bertahan setelah reload; logout tetap bersih (redirect ke login, key `optional_field` terhapus); tanpa error JS di konsol.
+**Tour test:** `optional_field_save_tour.js` ikut diubah. Sekarang memeriksa nilai di DB (`res.partner.optional_field_save`, key diawali `optional_field.res.partner,`), bukan lagi sessionStorage, karena sessionStorage kini ditulis sinkron. BELUM dijalankan lewat runner Odoo (staging tidak punya `test_*.py`); logika barunya diuji manual di tiga versi, sintaks dicek dengan `node --check`.
+**Catatan audit operasional:** pilihan kolom yang tersimpan dengan key lama (`optional_field.<model>`) TIDAK dimigrasi. Pengguna perlu memilih kolom sekali lagi. Key lama tetap ada di JSON partner sebagai key yatim (tidak berbahaya, tidak dibaca lagi).
+**Dibiarkan (keputusan pemilik modul, tidak diperbaiki):** user internal biasa tanpa hak tulis `res.partner` gagal menyimpan senyap di 18.0 dan 19.0 (F-10, MF-03 migrasi 17→18, warisan; di 20.0 sudah beres karena ACL native); `list_optional_show` native 20.0 tidak diteruskan (MF-03 migrasi 19→20). Temuan review statis lain juga tidak dikerjakan: pilihan "semua kolom mati" dianggap belum ada, sessionStorage bisa bocor antar user di tab yang sama, field Json tanpa `copy=False`/`groups`, read-modify-write tanpa antrian, logout kustom membuang bagian native (service worker, redirect PWA), filter logout `includes('optional_field')` terlalu longgar, kode mati, klaim "user record" di `index.html`.
+**Rilis:** staging 64a7f73→d12a861 | 18.0 64a7f73→d12a861 | commit fix `b2dbebc`, bump `d12a861` (versi 18.0.1.0.1). Diverifikasi remote lawan remote: diff staging=publish kosong, sisa file terlarang 0.
