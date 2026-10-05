@@ -2,6 +2,7 @@
 
 const { patch } = require("@web/core/utils/patch");
 const { useService } = require("@web/core/utils/hooks");
+const { onWillStart } = require("@odoo/owl");
 const { WebClient } = require("@web/webclient/webclient");
 const { session } = require("@web/session");
 const { user } = require("@web/core/user");
@@ -18,7 +19,15 @@ patch(WebClient.prototype, {
         this.orm = useService("orm");
         this.session = session;
         super.setup();
-        this.getOptionalActiveFields();
+        // Wait for the saved columns before the first list renders; a failed RPC must not
+        // block the web client from starting.
+        onWillStart(async () => {
+            try {
+                await this.getOptionalActiveFields();
+            } catch (error) {
+                console.error("Error loading optional fields:", error);
+            }
+        });
     },
 
     async getOptionalActiveFields() {
