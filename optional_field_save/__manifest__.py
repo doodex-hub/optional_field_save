@@ -14,7 +14,7 @@
     "website": "https://www.doodex.net/",
     "category": "Tools",
     "license": "AGPL-3",
-    "version": "20.0.1.0.0",
+    "version": "20.0.1.0.1",
     "depends": [
         "base",
         "web",
