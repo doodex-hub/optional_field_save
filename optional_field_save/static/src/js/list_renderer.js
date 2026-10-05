@@ -20,9 +20,7 @@ patch(ListRenderer.prototype, {
         // ListRenderer.getOptionalActiveFields() dihapus di 18.0, diganti
         // computeOptionalActiveFields() - pure function, return value (bukan mutasi
         // this.optionalActiveFields), dipanggil tiap onWillRender oleh core.
-        let str = this.keyOptionalFields.split(",")[1];
-        str = "optional_field." + str;
-        let optionalActiveFields = sessionStorage.getItem(str);
+        let optionalActiveFields = sessionStorage.getItem(this.getOptionalFieldStorageKey());
         if (!optionalActiveFields) {
             // Tidak ada di sessionStorage -> delegasikan fallback (localStorage / default
             // "show") ke core, dikonfirmasi user (03_MIGRATION_SPEC.md) behaviorally identik
@@ -38,9 +36,19 @@ patch(ListRenderer.prototype, {
         return result;
     },
 
+    getOptionalFieldStorageKey() {
+        // Full native view key (model, view id, fields), not just the model name, so every
+        // list view keeps its own optional columns instead of sharing one list per model.
+        return "optional_field." + this.keyOptionalFields.slice("optional_fields,".length);
+    },
+
     saveOptionalActiveFields() {
-        this.setDatabase(this.keyOptionalFields, Object.keys(this.optionalActiveFields).filter((fieldName) => this.optionalActiveFields[fieldName]));
-        browser.localStorage.setItem(this.keyOptionalFields, Object.keys(this.optionalActiveFields).filter((fieldName) => this.optionalActiveFields[fieldName]));
+        const activeFields = Object.keys(this.optionalActiveFields).filter((fieldName) => this.optionalActiveFields[fieldName]);
+        // Update sessionStorage synchronously: computeOptionalActiveFields() reads it on the
+        // render that follows a toggle, and setDatabase() only refreshes it after its RPCs.
+        browser.sessionStorage.setItem(this.getOptionalFieldStorageKey(), activeFields.join(","));
+        this.setDatabase(this.keyOptionalFields, activeFields);
+        browser.localStorage.setItem(this.keyOptionalFields, activeFields);
     },
 
     async setDatabase(value1, value2) {
@@ -53,9 +61,7 @@ patch(ListRenderer.prototype, {
             let old_value = {}
             old_value = datapartnerId[0].optional_field_save;
             let keysToCheck = Object.keys(old_value);
-            let string = value1;
-            let arrayString = string.split(",");
-            let key = "optional_field." + arrayString[1];
+            let key = this.getOptionalFieldStorageKey();
             let value = value2.join(",");
             if (datapartnerId.length > 0) {
                 if (keysToCheck.includes(key)) {

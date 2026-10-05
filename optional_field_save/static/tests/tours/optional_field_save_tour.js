@@ -24,6 +24,8 @@
 // regression in this module's code.
 
 import { registry } from "@web/core/registry";
+import { rpc } from "@web/core/network/rpc";
+import { user } from "@web/core/user";
 
 registry.category("web_tour.tours").add("optional_field_save_tour", {
     test: true,
@@ -65,23 +67,31 @@ registry.category("web_tour.tours").add("optional_field_save_tour", {
             trigger: "th[data-name='street']",
             content:
                 "Wait for setDatabase() to actually finish persisting to res.partner (poll " +
-                "the sessionStorage key it sets AFTER a successful write - see " +
-                "list_renderer.js setDatabase()). If this step times out, the write path " +
+                "the saved value in the database itself, since sessionStorage is now updated " +
+                "synchronously). If this step times out, the write path " +
                 "(MF-02: this.orm, MF-05: user.partnerId) is broken again.",
             run: async () => {
                 const deadline = Date.now() + 10000;
                 let value = null;
                 while (Date.now() < deadline) {
-                    value = sessionStorage.getItem("optional_field.res.partner");
-                    if (value) {
+                    const [partner] = await rpc("/web/dataset/call_kw/res.partner/read", {
+                        model: "res.partner",
+                        method: "read",
+                        args: [[user.partnerId], ["optional_field_save"]],
+                        kwargs: {},
+                    });
+                    const saved = partner.optional_field_save || {};
+                    const key = Object.keys(saved).find((k) => k.startsWith("optional_field.res.partner,"));
+                    value = key ? saved[key] : null;
+                    if (value && value.includes("street")) {
                         break;
                     }
                     await new Promise((resolve) => setTimeout(resolve, 200));
                 }
                 if (!value || !value.includes("street")) {
                     throw new Error(
-                        `Expected sessionStorage "optional_field.res.partner" to contain ` +
-                        `"street" after toggling the column, got: ${value}`
+                        `Expected res.partner.optional_field_save to hold an "optional_field.res.partner,*" ` +
+                        `key containing "street" after toggling the column, got: ${value}`
                     );
                 }
             },
