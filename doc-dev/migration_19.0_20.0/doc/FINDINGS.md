@@ -8,7 +8,7 @@
 
 **Modul:** optional_field_save
 **Migrasi:** 19.0 → 20.0
-**Terakhir update:** 2026-09-21
+**Terakhir update:** 2026-10-05
 
 ---
 
@@ -45,6 +45,7 @@ eksplisit sumbernya (mis. "MF-01 migrasi 18→19", bukan cuma "MF-01").
 | RMV-01 | Cross-Version Compare (`CROSS_VERSION_COMPARE.md`, dijalankan atas permintaan eksplisit dev setelah MF-05) — native Contacts list view 20.0 menambah opsi kolom "Created on" di dropdown optional columns, tidak ada di 19.0 | Cross-Version Compare (bukan step 1-11) | `[NATIVE-DIFF]` | Rendah | CLOSED — murni kosmetik native, tidak terkait modul, tidak difix |
 | RMV-02 | = **MF-05** (lihat di atas) — dikonfirmasi ULANG lewat Cross-Version Compare, A/B langsung 2 environment hidup bersamaan (19.0 vs 20.0) | Cross-Version Compare | `[REGRESI]` (sudah closed sebagai MF-05 sebelum compare ini dimulai) | — | CLOSED — lihat MF-05 |
 | RMV-03 | = **MF-01** (lihat di atas) — ACL self-write, TIDAK diulang via browser di Cross-Version Compare (provenance sudah `[DIKONFIRMASI]` kuat dari `TransactionCase` step 6/8) | Cross-Version Compare | `[NATIVE-DIFF]` | — | CLOSED — lihat MF-01 |
+| MF-06 | [POST-RILIS] Pilihan kolom tercampur antar list view, toggle telat satu klik, race muat preferensi, kolom opsional di <column> — diperbaiki di rilis 20.0.1.0.1 | Review pasca-rilis (di luar 11 step, sesi 2026-10-05) | `[POST-RILIS]` | Sedang | **CLOSED (2026-10-05)** — dirilis 20.0.1.0.1 |
 
 ---
 
@@ -88,6 +89,26 @@ Dicatat juga sebagai kandidat `migration-records/optional_field_save_19.0_20.0/S
 ke user/pemilik modul sebagai perubahan fungsional nyata (fitur "persist lintas browser" modul ini
 SEKARANG benar-benar bekerja untuk populasi user yang sebelumnya gagal silent), bukan cuma detail
 teknis migrasi.
+
+
+### MF-06 — [POST-RILIS] Pilihan kolom tercampur antar list view, toggle telat satu klik, race muat preferensi, kolom opsional di <column> — diperbaiki di rilis 20.0.1.0.1
+**Ditemukan di:** Review pasca-rilis, di luar 11 step migrasi (2026-10-05). Reproduksi di Docker (Odoo 18.0, 19.0, 20.0 berjalan bersamaan, browser Playwright).
+**Tag:** `[POST-RILIS]`
+**Sifat perubahan:** perubahan kode DISENGAJA atas persetujuan pemilik modul, DI LUAR migrasi (kode migrasi sebelumnya sengaja dijaga identik dengan versi sumber). `01b_BASELINE_SPEC.md` lama masih menggambarkan perilaku sebelum perbaikan (key penyimpanan per model).
+**Cakupan:** 18.0, 19.0, 20.0 (kode `static/src/js` identik di tiga versi). 16.0 dan 17.0 di luar lingkup.
+
+| Masalah | Lokasi | Status sebelum (terbukti di Docker) | Perbaikan |
+|---|---|---|---|
+| Pilihan kolom tercampur antar list view dari model yang sama | `list_renderer.js`: key memakai `keyOptionalFields.split(",")[1]` (hanya nama model) | Ubah satu kolom di list Contacts membuat view lain dari `res.partner` kehilangan kolom default-nya (view uji: tinggal `Name` atau `Name`+`City`) | Key = key view native lengkap: `optional_field.<model>,list,<viewId>,<fields>` (`getOptionalFieldStorageKey()`) |
+| Toggle kolom telat satu klik (ditemukan agen reviewer, lalu direproduksi) | `list_renderer.js`: `computeOptionalActiveFields` membaca sessionStorage lama, baru diperbarui setelah RPC `setDatabase` | Setelah DB berisi preferensi, klik kolom tidak mengubah tampilan sampai klik berikutnya. Tour lama tidak menangkapnya (hanya uji toggle pertama) | `saveOptionalActiveFields` menulis sessionStorage sinkron sebelum RPC |
+| Race muat preferensi vs render pertama | `webclient.js`: `getOptionalActiveFields()` dipanggil tanpa `await` di `setup()` | Normal: tidak terlihat. Dengan RPC baca preferensi ditunda 3 detik: list tampil dengan default dan tidak dikoreksi | `onWillStart` menunggu `getOptionalActiveFields()`; error di-log, tidak fatal |
+| Kolom opsional di dalam `<column>` (column_group, hanya ada di 20.0) | `list_renderer.js`: filter `col.type === "field" && col.optional` | DB menyimpan `email,phone` aktif, tetapi setelah reload dropdown menampilkannya tidak tercentang | Filter ikut menghitung `col.fields` dari `column_group` (sama dengan native 20.0) |
+
+**Hasil uji sesudah perbaikan (Docker, 20.0):** view kedua tetap menampilkan `Website Link` dan `City` setelah kolom di Contacts diubah; tiga toggle beruntun cocok dengan checkbox; dengan server lambat 3 detik render pertama sama dengan hasil normal; pilihan bertahan setelah reload; logout tetap bersih (redirect ke login, key `optional_field` terhapus); tanpa error JS di konsol. Kolom di dalam <column> tercentang sesuai DB setelah reload.
+**Tour test:** `optional_field_save_tour.js` ikut diubah. Sekarang memeriksa nilai di DB (`res.partner.optional_field_save`, key diawali `optional_field.res.partner,`), bukan lagi sessionStorage, karena sessionStorage kini ditulis sinkron. BELUM dijalankan lewat runner Odoo (staging tidak punya `test_*.py`); logika barunya diuji manual di tiga versi, sintaks dicek dengan `node --check`.
+**Catatan audit operasional:** pilihan kolom yang tersimpan dengan key lama (`optional_field.<model>`) TIDAK dimigrasi. Pengguna perlu memilih kolom sekali lagi. Key lama tetap ada di JSON partner sebagai key yatim (tidak berbahaya, tidak dibaca lagi).
+**Dibiarkan (keputusan pemilik modul, tidak diperbaiki):** user internal biasa tanpa hak tulis `res.partner` gagal menyimpan senyap di 18.0 dan 19.0 (F-10, MF-03 migrasi 17→18, warisan; di 20.0 sudah beres karena ACL native); `list_optional_show` native 20.0 tidak diteruskan (MF-03 migrasi 19→20). Temuan review statis lain juga tidak dikerjakan: pilihan "semua kolom mati" dianggap belum ada, sessionStorage bisa bocor antar user di tab yang sama, field Json tanpa `copy=False`/`groups`, read-modify-write tanpa antrian, logout kustom membuang bagian native (service worker, redirect PWA), filter logout `includes('optional_field')` terlalu longgar, kode mati, klaim "user record" di `index.html`.
+**Rilis:** staging dbe2113→f8fa236 | 20.0 dbe2113→f8fa236 | commit fix `dba1538`, bump `f8fa236` (versi 20.0.1.0.1). Diverifikasi remote lawan remote: diff staging=publish kosong, sisa file terlarang 0.
 
 ---
 
